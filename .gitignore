@@ -1,0 +1,8 @@
+#Ignore Files:
+Makefile
+resources.py
+
+#Ignore Folders:
+help/
+i18n/
+

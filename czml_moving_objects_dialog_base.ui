@@ -1,0 +1,399 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>CzmlMovingObjectsDialogBase</class>
+ <widget class="QDialog" name="CzmlMovingObjectsDialogBase">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>800</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>CZML Moving Objects</string>
+  </property>
+  <widget class="QTabWidget" name="tabWidget">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>801</width>
+     <height>601</height>
+    </rect>
+   </property>
+   <property name="currentIndex">
+    <number>1</number>
+   </property>
+   <widget class="QWidget" name="tabLayer">
+    <attribute name="title">
+     <string>Set Objects</string>
+    </attribute>
+    <widget class="QLineEdit" name="browse_lineEdit">
+     <property name="geometry">
+      <rect>
+       <x>160</x>
+       <y>180</y>
+       <width>400</width>
+       <height>27</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QLabel" name="group_by_label">
+     <property name="geometry">
+      <rect>
+       <x>180</x>
+       <y>114</y>
+       <width>151</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Group By Attribute:</string>
+     </property>
+    </widget>
+    <widget class="QComboBox" name="select_layer_comboBox">
+     <property name="geometry">
+      <rect>
+       <x>160</x>
+       <y>30</y>
+       <width>400</width>
+       <height>27</height>
+      </rect>
+     </property>
+     <property name="currentText">
+      <string/>
+     </property>
+     <property name="placeholderText">
+      <string>Select a point layer...</string>
+     </property>
+    </widget>
+    <widget class="QComboBox" name="group_by_comboBox">
+     <property name="geometry">
+      <rect>
+       <x>330</x>
+       <y>110</y>
+       <width>200</width>
+       <height>27</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="refresh_attributes_pushButton">
+     <property name="geometry">
+      <rect>
+       <x>270</x>
+       <y>70</y>
+       <width>141</width>
+       <height>27</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Refresh Attributes</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="select_layer_label">
+     <property name="geometry">
+      <rect>
+       <x>40</x>
+       <y>34</y>
+       <width>111</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Select a Layer:</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="browse_pushButton">
+     <property name="geometry">
+      <rect>
+       <x>40</x>
+       <y>180</y>
+       <width>91</width>
+       <height>27</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Browse</string>
+     </property>
+    </widget>
+    <widget class="QDialogButtonBox" name="button_box">
+     <property name="geometry">
+      <rect>
+       <x>400</x>
+       <y>500</y>
+       <width>341</width>
+       <height>32</height>
+      </rect>
+     </property>
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="tabClock">
+    <attribute name="title">
+     <string>Configure Clock</string>
+    </attribute>
+    <widget class="QRadioButton" name="radioButtonClockConf">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>210</x>
+       <y>30</y>
+       <width>381</width>
+       <height>25</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Activate to configure Cesium Clock in CZML</string>
+     </property>
+    </widget>
+    <widget class="QDateTimeEdit" name="dateTimeEditClockCurrent">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>350</x>
+       <y>100</y>
+       <width>194</width>
+       <height>28</height>
+      </rect>
+     </property>
+     <property name="dateTime">
+      <datetime>
+       <hour>15</hour>
+       <minute>0</minute>
+       <second>0</second>
+       <year>2020</year>
+       <month>12</month>
+       <day>30</day>
+      </datetime>
+     </property>
+     <property name="displayFormat">
+      <string>yyyy-MM-dd HH:mm</string>
+     </property>
+     <property name="timeSpec">
+      <enum>Qt::UTC</enum>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_current">
+     <property name="geometry">
+      <rect>
+       <x>200</x>
+       <y>104</y>
+       <width>141</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Current Datetime:</string>
+     </property>
+    </widget>
+    <widget class="QDateTimeEdit" name="dateTimeEditClockBeginning">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>170</x>
+       <y>180</y>
+       <width>194</width>
+       <height>28</height>
+      </rect>
+     </property>
+     <property name="dateTime">
+      <datetime>
+       <hour>14</hour>
+       <minute>0</minute>
+       <second>0</second>
+       <year>2020</year>
+       <month>12</month>
+       <day>30</day>
+      </datetime>
+     </property>
+     <property name="displayFormat">
+      <string>yyyy-MM-dd HH:mm</string>
+     </property>
+     <property name="timeSpec">
+      <enum>Qt::UTC</enum>
+     </property>
+    </widget>
+    <widget class="QDateTimeEdit" name="dateTimeEditClockEnd">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>490</x>
+       <y>180</y>
+       <width>194</width>
+       <height>28</height>
+      </rect>
+     </property>
+     <property name="dateTime">
+      <datetime>
+       <hour>13</hour>
+       <minute>0</minute>
+       <second>0</second>
+       <year>2020</year>
+       <month>12</month>
+       <day>30</day>
+      </datetime>
+     </property>
+     <property name="displayFormat">
+      <string>yyyy-MM-dd HH:mm</string>
+     </property>
+     <property name="timeSpec">
+      <enum>Qt::UTC</enum>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_beginning">
+     <property name="geometry">
+      <rect>
+       <x>80</x>
+       <y>183</y>
+       <width>81</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Beginning:</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_end">
+     <property name="geometry">
+      <rect>
+       <x>444</x>
+       <y>185</y>
+       <width>41</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>End:</string>
+     </property>
+    </widget>
+    <widget class="QComboBox" name="comboBoxClockRange">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>369</x>
+       <y>275</y>
+       <width>211</width>
+       <height>27</height>
+      </rect>
+     </property>
+     <item>
+      <property name="text">
+       <string>LOOP_STOP</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>UNBOUNDED</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>CLAMPED</string>
+      </property>
+     </item>
+    </widget>
+    <widget class="QLabel" name="label_clock_range">
+     <property name="geometry">
+      <rect>
+       <x>250</x>
+       <y>280</y>
+       <width>101</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Clock Range:</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_multiplier">
+     <property name="geometry">
+      <rect>
+       <x>267</x>
+       <y>235</y>
+       <width>81</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Multiplier:</string>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="lineEditClockMultiplier">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>370</x>
+       <y>232</y>
+       <width>113</width>
+       <height>27</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>10</string>
+     </property>
+    </widget>
+    <widget class="QComboBox" name="comboBoxClockStep">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>369</x>
+       <y>315</y>
+       <width>261</width>
+       <height>27</height>
+      </rect>
+     </property>
+     <item>
+      <property name="text">
+       <string>SYSTEM_CLOCK_MULTIPLIER</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>TICK_DEPENDENT</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>SYSTEM_CLOCK</string>
+      </property>
+     </item>
+    </widget>
+    <widget class="QLabel" name="label_clock_range_2">
+     <property name="geometry">
+      <rect>
+       <x>261</x>
+       <y>320</y>
+       <width>91</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Clock Step:</string>
+     </property>
+    </widget>
+   </widget>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
