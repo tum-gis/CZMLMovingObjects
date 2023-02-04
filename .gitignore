@@ -5,4 +5,5 @@ resources.py
 #Ignore Folders:
 help/
 i18n/
+test/
 
