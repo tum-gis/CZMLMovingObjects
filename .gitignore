@@ -1,6 +1,7 @@
 #Ignore Files:
 Makefile
 resources.py
+pb_tool.cfg
 
 #Ignore Folders:
 help/
