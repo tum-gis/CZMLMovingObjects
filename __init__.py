@@ -32,5 +32,5 @@ def classFactory(iface):  # pylint: disable=invalid-name
     :type iface: QgsInterface
     """
     #
-    from .czml_moving_objects import CzmlMovingObjects
+    from .CzmlMovingObjects import CzmlMovingObjects
     return CzmlMovingObjects(iface)

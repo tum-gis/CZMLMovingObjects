@@ -23,22 +23,12 @@
     </rect>
    </property>
    <property name="currentIndex">
-    <number>1</number>
+    <number>0</number>
    </property>
    <widget class="QWidget" name="tabLayer">
     <attribute name="title">
      <string>Set Objects</string>
     </attribute>
-    <widget class="QLineEdit" name="browse_lineEdit">
-     <property name="geometry">
-      <rect>
-       <x>160</x>
-       <y>180</y>
-       <width>400</width>
-       <height>27</height>
-      </rect>
-     </property>
-    </widget>
     <widget class="QLabel" name="group_by_label">
      <property name="geometry">
       <rect>
@@ -108,7 +98,7 @@
      <property name="geometry">
       <rect>
        <x>40</x>
-       <y>180</y>
+       <y>230</y>
        <width>91</width>
        <height>27</height>
       </rect>
@@ -131,6 +121,39 @@
      </property>
      <property name="standardButtons">
       <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="lineEditFileName">
+     <property name="geometry">
+      <rect>
+       <x>160</x>
+       <y>230</y>
+       <width>581</width>
+       <height>27</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QComboBox" name="comboBoxTimeZone">
+     <property name="geometry">
+      <rect>
+       <x>330</x>
+       <y>150</y>
+       <width>201</width>
+       <height>27</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QLabel" name="group_by_label_2">
+     <property name="geometry">
+      <rect>
+       <x>220</x>
+       <y>150</y>
+       <width>91</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Time Zone:</string>
      </property>
     </widget>
    </widget>
@@ -168,7 +191,7 @@
      </property>
      <property name="dateTime">
       <datetime>
-       <hour>15</hour>
+       <hour>13</hour>
        <minute>0</minute>
        <second>0</second>
        <year>2020</year>
@@ -210,7 +233,7 @@
      </property>
      <property name="dateTime">
       <datetime>
-       <hour>14</hour>
+       <hour>12</hour>
        <minute>0</minute>
        <second>0</second>
        <year>2020</year>
@@ -239,7 +262,7 @@
      </property>
      <property name="dateTime">
       <datetime>
-       <hour>13</hour>
+       <hour>11</hour>
        <minute>0</minute>
        <second>0</second>
        <year>2020</year>
@@ -395,5 +418,38 @@
   </widget>
  </widget>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>button_box</sender>
+   <signal>accepted()</signal>
+   <receiver>CzmlMovingObjectsDialogBase</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>572</x>
+     <y>546</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>399</x>
+     <y>299</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>button_box</sender>
+   <signal>rejected()</signal>
+   <receiver>CzmlMovingObjectsDialogBase</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>572</x>
+     <y>546</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>399</x>
+     <y>299</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>

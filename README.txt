@@ -1,7 +1,7 @@
 Plugin Builder Results
 
 Your plugin CzmlMovingObjects was created in:
-    /home/kendir/CZMLMovingObjects/czml_moving_objects
+    /home/kendir/CZMLMovingObjects/CzmlMovingObjects
 
 Your QGIS plugin directory is located at:
     /home/kendir/.local/share/QGIS/QGIS3/profiles/default/python/plugins
@@ -17,7 +17,7 @@ What's Next:
 
   * Test the plugin by enabling it in the QGIS plugin manager
 
-  * Customize it by editing the implementation file: ``czml_moving_objects.py``
+  * Customize it by editing the implementation file: ``CzmlMovingObjects.py``
 
   * Create your own custom icon, replacing the default icon.png
 

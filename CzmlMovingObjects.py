@@ -24,11 +24,11 @@
 from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction, QFileDialog
-
+from qgis.core import QgsProject, Qgis
 # Initialize Qt resources from file resources.py
 from .resources import *
 # Import the code for the dialog
-from .czml_moving_objects_dialog import CzmlMovingObjectsDialog
+from .CzmlMovingObjects_dialog import CzmlMovingObjectsDialog
 import os.path
 
 # Added
@@ -166,7 +166,7 @@ class CzmlMovingObjects:
     def initGui(self):
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
 
-        icon_path = ':/plugins/czml_moving_objects/icon.png'
+        icon_path = ':/plugins/CzmlMovingObjects/icon.png'
         self.add_action(
             icon_path,
             text=self.tr(u'Points to CZML Moving Objects'),
@@ -219,7 +219,8 @@ class CzmlMovingObjects:
             checkedFileURL = fileURL
         else:
             checkedFileURL = fileURL + '.czml'
-        self.dlg.browse_lineEdit.setText(checkedFileURL)
+        #self.dlg.browse_lineEdit.setText(checkedFileURL)
+        self.dlg.lineEditFileName.setText(checkedFileURL)
 
     def checkClockButton(self):
         if self.dlg.radioButtonClockConf.isChecked():
@@ -245,9 +246,14 @@ class CzmlMovingObjects:
         if self.first_start == True:
             self.first_start = False
             self.dlg = CzmlMovingObjectsDialog()
-            self.dlg.browse_lineEdit.clear()
+            self.dlg.lineEditFileName.clear()
             self.dlg.browse_pushButton.clicked.connect(self.browseForFileName)
-         
+        
+        self.dlg.comboBoxTimeZone.clear()
+        self.dlg.comboBoxTimeZone.addItems(pytz.all_timezones)
+        #print(pytz.all_timezones)
+        self.dlg.comboBoxTimeZone.setCurrentText('UTC')
+
         #If Configure Cesium Clock radio button element selected, then activate clock parameters and get them.
         self.dlg.radioButtonClockConf.clicked.connect(self.checkClockButton)   
 
@@ -269,11 +275,13 @@ class CzmlMovingObjects:
         # See if OK was pressed
         if result:
             # Save File after <OK> clicked.
-            fileURL = self.dlg.browse_lineEdit.text()
-            exportedFile = open(fileURL, mode='w', encoding='utf-8')
+            fileURL = self.dlg.lineEditFileName.text()
 
+            
             #Take CZML Clock time interval options
             if self.dlg.radioButtonClockConf.isChecked():
+                selectedTimeZone = self.dlg.comboBoxTimeZone.currentText()
+                timeZone = timezone(self.dlg.comboBoxTimeZone.currentText())
                 selectedClockCurrent = self.dlg.dateTimeEditClockCurrent.dateTime()
                 selectedClockCurrentLocal = timeZone.localize(selectedClockCurrent.toPyDateTime()).isoformat()
                 selectedClockBeginning = self.dlg.dateTimeEditClockBeginning.dateTime()
@@ -283,8 +291,34 @@ class CzmlMovingObjects:
                 selectedClockMultiplier = self.dlg.lineEditClockMultiplier.text()
                 selectedClockRange = self.dlg.comboBoxClockRange.currentText()
                 selectedClockStep = self.dlg.comboBoxClockStep.currentText()
+            
+            
+            #Take Selected layer from current QGIS canvas.
+            currentLayers = QgsProject.instance().mapLayers()
+            if self.dlg.select_layer_comboBox.currentIndex() != 0:
+                for layer in currentLayers:
+                    if currentLayers.get(layer).name() == self.dlg.select_layer_comboBox.currentText():
+                        selectedLayer = currentLayers.get(layer)
+            layerName = selectedLayer.name()
+            
+            exportedFile = open(fileURL, mode='w', encoding='utf-8')
+            
+            if self.dlg.radioButtonClockConf.isChecked():
+                documentClock = Metadata.Clock(selectedClockCurrentLocal, selectedClockBeginningLocal, selectedClockEndLocal, selectedClockMultiplier, selectedClockRange, selectedClockStep)
+                documentMetadata = Metadata("1.0", "document", layerName, documentClock)
+            else:
+                documentMetadata = Metadata("1.0", "document", layerName)
+                print( documentMetadata.getMetaDict() )
 
-            exportedFile.write('test 1 2 3\ntest 4 5 6')
+            beginningLines ='[\n' +  json.dumps( documentMetadata.getMetaDict(), indent=4 )
+
+            featureLines = ''
+            for feature in selectedLayer.getFeatures():
+                featureLines += str(round(feature.geometry().asPoint().x(),7)) + '\n'
+
+            wholeDocument = beginningLines + featureLines +'test data 1 2 3\ntest data 5 6 7'
+            print(wholeDocument)
+            exportedFile.write(wholeDocument)
             exportedFile.close()
             # Do something useful here - delete the line containing pass and
             # substitute with your code.

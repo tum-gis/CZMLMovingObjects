@@ -29,7 +29,7 @@ from qgis.PyQt import QtWidgets
 
 # This loads your .ui file so that PyQt can populate your plugin with the elements from Qt Designer
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
-    os.path.dirname(__file__), 'czml_moving_objects_dialog_base.ui'))
+    os.path.dirname(__file__), 'CzmlMovingObjects_dialog_base.ui'))
 
 
 class CzmlMovingObjectsDialog(QtWidgets.QDialog, FORM_CLASS):
