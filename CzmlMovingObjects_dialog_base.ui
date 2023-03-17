@@ -58,7 +58,7 @@
       <string>Select a point layer...</string>
      </property>
     </widget>
-    <widget class="QComboBox" name="group_by_comboBox">
+    <widget class="QComboBox" name="groupByComboBox">
      <property name="geometry">
       <rect>
        <x>330</x>
@@ -191,7 +191,7 @@
      </property>
      <property name="dateTime">
       <datetime>
-       <hour>13</hour>
+       <hour>12</hour>
        <minute>0</minute>
        <second>0</second>
        <year>2020</year>
@@ -233,7 +233,7 @@
      </property>
      <property name="dateTime">
       <datetime>
-       <hour>12</hour>
+       <hour>11</hour>
        <minute>0</minute>
        <second>0</second>
        <year>2020</year>
@@ -262,7 +262,7 @@
      </property>
      <property name="dateTime">
       <datetime>
-       <hour>11</hour>
+       <hour>10</hour>
        <minute>0</minute>
        <second>0</second>
        <year>2020</year>

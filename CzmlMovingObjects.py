@@ -24,7 +24,7 @@
 from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction, QFileDialog
-from qgis.core import QgsProject, Qgis
+from qgis.core import QgsProject, Qgis, QgsCoordinateTransform, QgsCoordinateReferenceSystem
 # Initialize Qt resources from file resources.py
 from .resources import *
 # Import the code for the dialog
@@ -32,11 +32,13 @@ from .CzmlMovingObjects_dialog import CzmlMovingObjectsDialog
 import os.path
 
 # Added
-from qgis.core import QgsProject
+# from qgis.core import QgsProject
 from pytz import timezone
 import pytz
+import pyproj
 import json
 from .Metadata import Metadata
+from .Vehicle import Vehicle
 
 class CzmlMovingObjects:
     """QGIS Plugin Implementation."""
@@ -204,9 +206,9 @@ class CzmlMovingObjects:
                 if currentLayers.get(layer).name() == self.dlg.select_layer_comboBox.currentText():
                     selectedLayer = currentLayers.get(layer)
                     #print(selectedLayer.attributeAliases())
-                    self.dlg.group_by_comboBox.clear()
-                    self.dlg.group_by_comboBox.addItem('Not Selected')
-                    self.dlg.group_by_comboBox.addItems(selectedLayer.attributeAliases())
+                    self.dlg.groupByComboBox.clear()
+                    self.dlg.groupByComboBox.addItem('Not Selected')
+                    self.dlg.groupByComboBox.addItems(selectedLayer.attributeAliases())
         else:
             print('Please select a valid layer.')
 
@@ -312,11 +314,42 @@ class CzmlMovingObjects:
 
             beginningLines ='[\n' +  json.dumps( documentMetadata.getMetaDict(), indent=4 )
 
-            featureLines = ''
-            for feature in selectedLayer.getFeatures():
-                featureLines += str(round(feature.geometry().asPoint().x(),7)) + '\n'
+            groupByAttribute = self.dlg.groupByComboBox.currentText()
 
-            wholeDocument = beginningLines + featureLines +'test data 1 2 3\ntest data 5 6 7'
+            idn = 'Vehicle01'
+
+            positions = []
+
+            #for feature in selectedLayer.getFeatures():
+            #    positions.append(round(feature.geometry().asPoint().x(),7))
+            #    positions.append(round(feature.geometry().asPoint().y(),7))
+
+            #transform2Cartesian = QgsCoordinateTransform(QgsCoordinateReferenceSystem("EPSG:4326"),QgsCoordinateReferenceSystem("EPSG:4978"),QgsProject.instance())
+            transform2Cartesian = pyproj.Transformer.from_crs("EPSG:4326", "EPSG:4978", always_xy = True)
+
+
+            for feature in selectedLayer.getFeatures():
+                point = feature.geometry().asPoint()
+                cartesianPoint = (transform2Cartesian.transform(point.x(), point.y(), 0))
+                positions.append(cartesianPoint[0])
+                positions.append(cartesianPoint[1])
+                positions.append(cartesianPoint[2])
+                
+                
+
+            #print(positions)
+
+            vehiclePosition = Vehicle.Position(positions)
+
+            vehicleData = Vehicle(idn, vehiclePosition)
+
+            featureLines = ',\n' + json.dumps( vehicleData.getVehicleDict(), indent=4 )
+
+            
+            #for feature in selectedLayer.getFeatures():
+            #    featureLines += str(round(feature.geometry().asPoint().x(),7)) + '\n'
+
+            wholeDocument = beginningLines + featureLines +'\n]\n'
             print(wholeDocument)
             exportedFile.write(wholeDocument)
             exportedFile.close()
