@@ -1,10 +1,10 @@
 #Ignore Files:
-Makefile
-resources.py
-pb_tool.cfg
+# Makefile
+# resources.py
+# pb_tool.cfg
 
 #Ignore Folders:
-help/
-i18n/
+# help/
+# i18n/
 test/
 
