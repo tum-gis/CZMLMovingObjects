@@ -24,7 +24,7 @@
 from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction, QFileDialog
-from qgis.core import QgsProject, Qgis, QgsCoordinateTransform, QgsCoordinateReferenceSystem
+from qgis.core import QgsProject, Qgis, QgsCoordinateTransform, QgsCoordinateReferenceSystem, QgsVectorLayerUtils
 # Initialize Qt resources from file resources.py
 from .resources import *
 # Import the code for the dialog
@@ -303,8 +303,6 @@ class CzmlMovingObjects:
                         selectedLayer = currentLayers.get(layer)
             layerName = selectedLayer.name()
             
-            exportedFile = open(fileURL, mode='w', encoding='utf-8')
-            
             if self.dlg.radioButtonClockConf.isChecked():
                 documentClock = Metadata.Clock(selectedClockCurrentLocal, selectedClockBeginningLocal, selectedClockEndLocal, selectedClockMultiplier, selectedClockRange, selectedClockStep)
                 documentMetadata = Metadata("1.0", "document", layerName, documentClock)
@@ -316,43 +314,30 @@ class CzmlMovingObjects:
 
             groupByAttribute = self.dlg.groupByComboBox.currentText()
 
-            idn = 'Vehicle01'
+            if groupByAttribute != 'Not Selected':
+                list_of_values = QgsVectorLayerUtils.getValues(selectedLayer, groupByAttribute)[0]
+                list_of_values = list(set(list_of_values))
+                for vehicle in list_of_values:
+                    fileURL=fileURL+vehicle
+                    exportedFile = open(fileURL, mode='w', encoding='utf-8')
+                    idn = 'Vehicle'+vehicle
+                    positions = []
+                    transform2Cartesian = pyproj.Transformer.from_crs("EPSG:4326", "EPSG:4978", always_xy = True)
+                    for feature in selectedLayer.getFeatures():
+                        point = feature.geometry().asPoint()
+                        cartesianPoint = (transform2Cartesian.transform(point.x(), point.y(), 0))
+                        positions.append(cartesianPoint[0])
+                        positions.append(cartesianPoint[1])
+                        positions.append(cartesianPoint[2])
+                    vehiclePosition = Vehicle.Position(positions)
+                    vehicleData = Vehicle(idn, vehiclePosition)
+                    featureLines = ',\n' + json.dumps( vehicleData.getVehicleDict(), indent=4 )
+                    wholeDocument = beginningLines + featureLines +'\n]\n'
+                    print(wholeDocument)
+                    exportedFile.write(wholeDocument)
+                    exportedFile.close()
 
-            positions = []
 
-            #for feature in selectedLayer.getFeatures():
-            #    positions.append(round(feature.geometry().asPoint().x(),7))
-            #    positions.append(round(feature.geometry().asPoint().y(),7))
-
-            #transform2Cartesian = QgsCoordinateTransform(QgsCoordinateReferenceSystem("EPSG:4326"),QgsCoordinateReferenceSystem("EPSG:4978"),QgsProject.instance())
-            transform2Cartesian = pyproj.Transformer.from_crs("EPSG:4326", "EPSG:4978", always_xy = True)
-
-
-            for feature in selectedLayer.getFeatures():
-                point = feature.geometry().asPoint()
-                cartesianPoint = (transform2Cartesian.transform(point.x(), point.y(), 0))
-                positions.append(cartesianPoint[0])
-                positions.append(cartesianPoint[1])
-                positions.append(cartesianPoint[2])
-                
-                
-
-            #print(positions)
-
-            vehiclePosition = Vehicle.Position(positions)
-
-            vehicleData = Vehicle(idn, vehiclePosition)
-
-            featureLines = ',\n' + json.dumps( vehicleData.getVehicleDict(), indent=4 )
-
-            
-            #for feature in selectedLayer.getFeatures():
-            #    featureLines += str(round(feature.geometry().asPoint().x(),7)) + '\n'
-
-            wholeDocument = beginningLines + featureLines +'\n]\n'
-            print(wholeDocument)
-            exportedFile.write(wholeDocument)
-            exportedFile.close()
             # Do something useful here - delete the line containing pass and
             # substitute with your code.
             pass
