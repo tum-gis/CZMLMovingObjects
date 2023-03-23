@@ -2,28 +2,31 @@
 {
     "version": "1.0",
     "id": "document",
-    "name": "test_data"
+    "name": "test_data",
+    "clock": {
+        "interval": "2012-08-04T16:00:00+02:00/2012-08-04T16:02:00+02:00",
+        "currentTime": "2012-08-04T16:00:00+02:00",
+        "multiplier": 10,
+        "range": "LOOP_STOP",
+        "step": "SYSTEM_CLOCK_MULTIPLIER"
+    }
 },
 {
-    "id": "Vehicle01",
+    "id": "Vehicle",
     "position": {
         "interpolationAlgorithm": "LAGRANGE",
         "interpolationDegree": 1,
         "epoch": "2012-08-04T16:00:00Z",
         "cartesian": [
-            0,
             4173463.2512114565,
             855499.6076687514,
             4730763.756357295,
-            30,
             4173467.1696693324,
             855500.7145017241,
             4730760.123828774,
-            60,
             4173471.15998907,
             855499.4072175479,
             4730756.861963498,
-            90,
             4173472.071719526,
             855497.8483738961,
             4730756.34303013

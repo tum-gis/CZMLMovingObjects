@@ -209,6 +209,9 @@ class CzmlMovingObjects:
                     self.dlg.groupByComboBox.clear()
                     self.dlg.groupByComboBox.addItem('Not Selected')
                     self.dlg.groupByComboBox.addItems(selectedLayer.attributeAliases())
+                    self.dlg.comboBoxSeconds.clear()
+                    self.dlg.comboBoxSeconds.addItem('Not Selected')
+                    self.dlg.comboBoxSeconds.addItems(selectedLayer.attributeAliases())
         else:
             print('Please select a valid layer.')
 
@@ -223,6 +226,24 @@ class CzmlMovingObjects:
             checkedFileURL = fileURL + '.czml'
         #self.dlg.browse_lineEdit.setText(checkedFileURL)
         self.dlg.lineEditFileName.setText(checkedFileURL)
+
+    def checkFanout(self):
+        if self.dlg.radioButtonFanout.isChecked():
+            self.dlg.groupByLabel.setEnabled(1)
+            self.dlg.groupByComboBox.setEnabled(1)
+            self.dlg.pushButtonSelectFolder.setEnabled(1)
+            self.dlg.lineEditFolderName.setEnabled(1)
+            self.dlg.lineEditFileNamePrefix.setEnabled(1)
+            self.dlg.browse_pushButton.setDisabled(1)
+            self.dlg.lineEditFileName.setDisabled(1)
+        else:
+            self.dlg.groupByLabel.setDisabled(1)
+            self.dlg.groupByComboBox.setDisabled(1)
+            self.dlg.pushButtonSelectFolder.setDisabled(1)
+            self.dlg.lineEditFolderName.setDisabled(1)
+            self.dlg.lineEditFileNamePrefix.setDisabled(1)
+            self.dlg.browse_pushButton.setEnabled(1)
+            self.dlg.lineEditFileName.setEnabled(1)
 
     def checkClockButton(self):
         if self.dlg.radioButtonClockConf.isChecked():
@@ -259,6 +280,9 @@ class CzmlMovingObjects:
         #If Configure Cesium Clock radio button element selected, then activate clock parameters and get them.
         self.dlg.radioButtonClockConf.clicked.connect(self.checkClockButton)   
 
+        #If Fanout Dataset radio button checked, then activate "Group By Attribute" dropdown menu.
+        self.dlg.radioButtonFanout.clicked.connect(self.checkFanout)   
+
         #MK Populate Layers ComboBox with existed poitn based vector layers
 
         #MK Clear first point based layers combobox, then populate with point layers.
@@ -293,8 +317,8 @@ class CzmlMovingObjects:
                 selectedClockMultiplier = self.dlg.lineEditClockMultiplier.text()
                 selectedClockRange = self.dlg.comboBoxClockRange.currentText()
                 selectedClockStep = self.dlg.comboBoxClockStep.currentText()
-            
-            
+
+
             #Take Selected layer from current QGIS canvas.
             currentLayers = QgsProject.instance().mapLayers()
             if self.dlg.select_layer_comboBox.currentIndex() != 0:
@@ -314,7 +338,7 @@ class CzmlMovingObjects:
 
             groupByAttribute = self.dlg.groupByComboBox.currentText()
 
-            if groupByAttribute != 'Not Selected':
+            if self.dlg.radioButtonFanout.isChecked() and groupByAttribute != 'Not Selected':
                 list_of_values = QgsVectorLayerUtils.getValues(selectedLayer, groupByAttribute)[0]
                 list_of_values = list(set(list_of_values))
                 for vehicle in list_of_values:
@@ -336,6 +360,24 @@ class CzmlMovingObjects:
                     print(wholeDocument)
                     exportedFile.write(wholeDocument)
                     exportedFile.close()
+            else:
+                exportedFile = open(fileURL, mode='w', encoding='utf-8')
+                idn = 'Vehicle'
+                positions = []
+                transform2Cartesian = pyproj.Transformer.from_crs("EPSG:4326", "EPSG:4978", always_xy = True)
+                for feature in selectedLayer.getFeatures():
+                    point = feature.geometry().asPoint()
+                    cartesianPoint = (transform2Cartesian.transform(point.x(), point.y(), 0))
+                    positions.append(cartesianPoint[0])
+                    positions.append(cartesianPoint[1])
+                    positions.append(cartesianPoint[2])
+                vehiclePosition = Vehicle.Position(positions)
+                vehicleData = Vehicle(idn, vehiclePosition)
+                featureLines = ',\n' + json.dumps( vehicleData.getVehicleDict(), indent=4 )
+                wholeDocument = beginningLines + featureLines +'\n]\n'
+                print(wholeDocument)
+                exportedFile.write(wholeDocument)
+                exportedFile.close()
 
 
             # Do something useful here - delete the line containing pass and

@@ -29,7 +29,10 @@
     <attribute name="title">
      <string>Set Objects</string>
     </attribute>
-    <widget class="QLabel" name="group_by_label">
+    <widget class="QLabel" name="groupByLabel">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="geometry">
       <rect>
        <x>180</x>
@@ -59,6 +62,9 @@
      </property>
     </widget>
     <widget class="QComboBox" name="groupByComboBox">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="geometry">
       <rect>
        <x>330</x>
@@ -128,7 +134,7 @@
       <rect>
        <x>160</x>
        <y>230</y>
-       <width>581</width>
+       <width>501</width>
        <height>27</height>
       </rect>
      </property>
@@ -137,7 +143,7 @@
      <property name="geometry">
       <rect>
        <x>330</x>
-       <y>150</y>
+       <y>190</y>
        <width>201</width>
        <height>27</height>
       </rect>
@@ -147,13 +153,94 @@
      <property name="geometry">
       <rect>
        <x>220</x>
-       <y>150</y>
+       <y>190</y>
        <width>91</width>
        <height>20</height>
       </rect>
      </property>
      <property name="text">
       <string>Time Zone:</string>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="radioButtonFanout">
+     <property name="geometry">
+      <rect>
+       <x>30</x>
+       <y>113</y>
+       <width>131</width>
+       <height>25</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Fanout Dataset</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="pushButtonSelectFolder">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>40</x>
+       <y>290</y>
+       <width>131</width>
+       <height>27</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>select Folder</string>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="lineEditFolderName">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>180</x>
+       <y>290</y>
+       <width>301</width>
+       <height>27</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="lineEditFileNamePrefix">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>490</x>
+       <y>290</y>
+       <width>161</width>
+       <height>27</height>
+      </rect>
+     </property>
+     <property name="placeholderText">
+      <string>Type Prefix for Files</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="labelSelectAttributeForTime">
+     <property name="geometry">
+      <rect>
+       <x>75</x>
+       <y>155</y>
+       <width>231</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Select Attribute for Seconds* :</string>
+     </property>
+    </widget>
+    <widget class="QComboBox" name="comboBoxSeconds">
+     <property name="geometry">
+      <rect>
+       <x>330</x>
+       <y>150</y>
+       <width>201</width>
+       <height>27</height>
+      </rect>
      </property>
     </widget>
    </widget>
@@ -191,7 +278,7 @@
      </property>
      <property name="dateTime">
       <datetime>
-       <hour>12</hour>
+       <hour>11</hour>
        <minute>0</minute>
        <second>0</second>
        <year>2020</year>
@@ -233,7 +320,7 @@
      </property>
      <property name="dateTime">
       <datetime>
-       <hour>11</hour>
+       <hour>10</hour>
        <minute>0</minute>
        <second>0</second>
        <year>2020</year>
@@ -262,7 +349,7 @@
      </property>
      <property name="dateTime">
       <datetime>
-       <hour>10</hour>
+       <hour>9</hour>
        <minute>0</minute>
        <second>0</second>
        <year>2020</year>
