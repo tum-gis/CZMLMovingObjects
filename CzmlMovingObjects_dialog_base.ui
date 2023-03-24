@@ -104,7 +104,7 @@
      <property name="geometry">
       <rect>
        <x>40</x>
-       <y>230</y>
+       <y>290</y>
        <width>91</width>
        <height>27</height>
       </rect>
@@ -133,7 +133,7 @@
      <property name="geometry">
       <rect>
        <x>160</x>
-       <y>230</y>
+       <y>290</y>
        <width>501</width>
        <height>27</height>
       </rect>
@@ -143,7 +143,7 @@
      <property name="geometry">
       <rect>
        <x>330</x>
-       <y>190</y>
+       <y>250</y>
        <width>201</width>
        <height>27</height>
       </rect>
@@ -153,7 +153,7 @@
      <property name="geometry">
       <rect>
        <x>220</x>
-       <y>190</y>
+       <y>250</y>
        <width>91</width>
        <height>20</height>
       </rect>
@@ -182,7 +182,7 @@
      <property name="geometry">
       <rect>
        <x>40</x>
-       <y>290</y>
+       <y>350</y>
        <width>131</width>
        <height>27</height>
       </rect>
@@ -198,7 +198,7 @@
      <property name="geometry">
       <rect>
        <x>180</x>
-       <y>290</y>
+       <y>350</y>
        <width>301</width>
        <height>27</height>
       </rect>
@@ -211,7 +211,7 @@
      <property name="geometry">
       <rect>
        <x>490</x>
-       <y>290</y>
+       <y>350</y>
        <width>161</width>
        <height>27</height>
       </rect>
@@ -239,6 +239,29 @@
        <x>330</x>
        <y>150</y>
        <width>201</width>
+       <height>27</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QLabel" name="labelShowAs">
+     <property name="geometry">
+      <rect>
+       <x>40</x>
+       <y>204</y>
+       <width>71</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Show As:</string>
+     </property>
+    </widget>
+    <widget class="QComboBox" name="comboBoxShowAs">
+     <property name="geometry">
+      <rect>
+       <x>120</x>
+       <y>200</y>
+       <width>121</width>
        <height>27</height>
       </rect>
      </property>
@@ -278,7 +301,7 @@
      </property>
      <property name="dateTime">
       <datetime>
-       <hour>11</hour>
+       <hour>10</hour>
        <minute>0</minute>
        <second>0</second>
        <year>2020</year>
@@ -320,7 +343,7 @@
      </property>
      <property name="dateTime">
       <datetime>
-       <hour>10</hour>
+       <hour>9</hour>
        <minute>0</minute>
        <second>0</second>
        <year>2020</year>
@@ -349,7 +372,7 @@
      </property>
      <property name="dateTime">
       <datetime>
-       <hour>9</hour>
+       <hour>8</hour>
        <minute>0</minute>
        <second>0</second>
        <year>2020</year>

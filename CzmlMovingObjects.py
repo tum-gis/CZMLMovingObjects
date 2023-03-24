@@ -37,6 +37,7 @@ from pytz import timezone
 import pytz
 import pyproj
 import json
+from urllib import parse
 from .Metadata import Metadata
 from .Vehicle import Vehicle
 
@@ -198,6 +199,12 @@ class CzmlMovingObjects:
                 pointLayerNames.append(currentLayers.get(layer).name())
         return pointLayerNames
 
+    def fillComboBoxShowAs(self):
+        showAsOptions = ('Point', 'Point w Color')
+        self.dlg.comboBoxShowAs.clear()
+        self.dlg.comboBoxShowAs.addItem('Not Selected')
+        self.dlg.comboBoxShowAs.addItems(showAsOptions)
+
     #MK #Read layer attributes and populate attribute comboxes with them.
     def fill_group_by_combobox(self):
         currentLayers = QgsProject.instance().mapLayers()
@@ -226,6 +233,10 @@ class CzmlMovingObjects:
             checkedFileURL = fileURL + '.czml'
         #self.dlg.browse_lineEdit.setText(checkedFileURL)
         self.dlg.lineEditFileName.setText(checkedFileURL)
+
+    def selectFolder(self):
+        folderName = QFileDialog.getExistingDirectory(self.dlg, "Select a folder", "", QFileDialog.ShowDirsOnly)
+        self.dlg.lineEditFolderName.setText(folderName)
 
     def checkFanout(self):
         if self.dlg.radioButtonFanout.isChecked():
@@ -271,6 +282,7 @@ class CzmlMovingObjects:
             self.dlg = CzmlMovingObjectsDialog()
             self.dlg.lineEditFileName.clear()
             self.dlg.browse_pushButton.clicked.connect(self.browseForFileName)
+            self.dlg.pushButtonSelectFolder.clicked.connect(self.selectFolder)
         
         self.dlg.comboBoxTimeZone.clear()
         self.dlg.comboBoxTimeZone.addItems(pytz.all_timezones)
@@ -290,6 +302,9 @@ class CzmlMovingObjects:
         #MK Set a placeholder text for layer combobox
         self.dlg.select_layer_comboBox.addItem('Select a point layer')
         self.dlg.select_layer_comboBox.addItems(self.getPointVectorLayers())
+
+        #Fill "Show As" combo bo with options.
+        self.fillComboBoxShowAs()
 
         #MK Fill Group By Attributes Button
         self.dlg.refresh_attributes_pushButton.clicked.connect(self.fill_group_by_combobox)
@@ -332,29 +347,42 @@ class CzmlMovingObjects:
                 documentMetadata = Metadata("1.0", "document", layerName, documentClock)
             else:
                 documentMetadata = Metadata("1.0", "document", layerName)
-                print( documentMetadata.getMetaDict() )
+                #print( documentMetadata.getMetaDict() )
 
             beginningLines ='[\n' +  json.dumps( documentMetadata.getMetaDict(), indent=4 )
 
             groupByAttribute = self.dlg.groupByComboBox.currentText()
+            secondsAttribute = self.dlg.comboBoxSeconds.currentText()
+            fanoutPrefix = self.dlg.lineEditFileNamePrefix.text()
+            fanoutFolder = self.dlg.lineEditFolderName.text()
 
             if self.dlg.radioButtonFanout.isChecked() and groupByAttribute != 'Not Selected':
                 list_of_values = QgsVectorLayerUtils.getValues(selectedLayer, groupByAttribute)[0]
                 list_of_values = list(set(list_of_values))
                 for vehicle in list_of_values:
-                    fileURL=fileURL+vehicle
+                    quotedVehicle = parse.quote_plus(vehicle)
+                    print(quotedVehicle)
+                    fileURL=fanoutFolder+os.path.sep+fanoutPrefix+quotedVehicle+'.czml'
+                    print(fileURL)
                     exportedFile = open(fileURL, mode='w', encoding='utf-8')
                     idn = 'Vehicle'+vehicle
                     positions = []
                     transform2Cartesian = pyproj.Transformer.from_crs("EPSG:4326", "EPSG:4978", always_xy = True)
                     for feature in selectedLayer.getFeatures():
                         point = feature.geometry().asPoint()
+                        secondz = feature[secondsAttribute]
                         cartesianPoint = (transform2Cartesian.transform(point.x(), point.y(), 0))
                         positions.append(cartesianPoint[0])
                         positions.append(cartesianPoint[1])
                         positions.append(cartesianPoint[2])
                     vehiclePosition = Vehicle.Position(positions)
-                    vehicleData = Vehicle(idn, vehiclePosition)
+                    if self.dlg.comboBoxShowAs.currentText() == 'Point':
+                        vehiclePoint = Vehicle.Point()
+                    else: 
+                        #Change here and add other options later
+                        print('Since there is no other available option yet, please get by with point object!')
+                        vehiclePoint = Vehicle.Point()
+                    vehicleData = Vehicle(idn, vehiclePosition, vehiclePoint)
                     featureLines = ',\n' + json.dumps( vehicleData.getVehicleDict(), indent=4 )
                     wholeDocument = beginningLines + featureLines +'\n]\n'
                     print(wholeDocument)
@@ -367,12 +395,21 @@ class CzmlMovingObjects:
                 transform2Cartesian = pyproj.Transformer.from_crs("EPSG:4326", "EPSG:4978", always_xy = True)
                 for feature in selectedLayer.getFeatures():
                     point = feature.geometry().asPoint()
+                    secondz = feature[secondsAttribute]
                     cartesianPoint = (transform2Cartesian.transform(point.x(), point.y(), 0))
-                    positions.append(cartesianPoint[0])
-                    positions.append(cartesianPoint[1])
-                    positions.append(cartesianPoint[2])
+                    positions.append(round(secondz,3))
+                    positions.append(round(cartesianPoint[0],2))
+                    positions.append(round(cartesianPoint[1],2))
+                    positions.append(round(cartesianPoint[2],2))
                 vehiclePosition = Vehicle.Position(positions)
-                vehicleData = Vehicle(idn, vehiclePosition)
+                if self.dlg.comboBoxShowAs.currentText() == 'Point':
+                    vehiclePoint = Vehicle.Point()
+                else: 
+                    #Change here and add other options later
+                    print('Since there is no other available option yet, please get by with point object!')
+                    vehiclePoint = Vehicle.Point()
+                vehicleData = Vehicle(idn, vehiclePosition, vehiclePoint)
+                #print(vehicleData.getVehicleDict())
                 featureLines = ',\n' + json.dumps( vehicleData.getVehicleDict(), indent=4 )
                 wholeDocument = beginningLines + featureLines +'\n]\n'
                 print(wholeDocument)
