@@ -525,6 +525,11 @@
      </property>
     </widget>
    </widget>
+   <widget class="QWidget" name="tabTile">
+    <attribute name="title">
+     <string>Tiling?</string>
+    </attribute>
+   </widget>
   </widget>
  </widget>
  <resources/>
