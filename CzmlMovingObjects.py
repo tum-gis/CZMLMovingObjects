@@ -272,6 +272,9 @@ class CzmlMovingObjects:
             self.dlg.comboBoxClockRange.setDisabled(1)
             self.dlg.comboBoxClockStep.setDisabled(1)
 
+    def checkApproximateEdgeSize(self):
+        print('nothing')
+
     def run(self):
         """Run method that performs all the real work"""
 
@@ -294,6 +297,9 @@ class CzmlMovingObjects:
 
         #If Fanout Dataset radio button checked, then activate "Group By Attribute" dropdown menu.
         self.dlg.radioButtonFanout.clicked.connect(self.checkFanout)   
+
+        #
+        self.dlg.comboBoxTileZLevel.currentIndexChanged.connect(self.checkApproximateEdgeSize) 
 
         #MK Populate Layers ComboBox with existed poitn based vector layers
 

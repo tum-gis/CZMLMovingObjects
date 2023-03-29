@@ -23,7 +23,7 @@
     </rect>
    </property>
    <property name="currentIndex">
-    <number>0</number>
+    <number>2</number>
    </property>
    <widget class="QWidget" name="tabLayer">
     <attribute name="title">
@@ -301,7 +301,7 @@
      </property>
      <property name="dateTime">
       <datetime>
-       <hour>10</hour>
+       <hour>9</hour>
        <minute>0</minute>
        <second>0</second>
        <year>2020</year>
@@ -343,7 +343,7 @@
      </property>
      <property name="dateTime">
       <datetime>
-       <hour>9</hour>
+       <hour>8</hour>
        <minute>0</minute>
        <second>0</second>
        <year>2020</year>
@@ -372,7 +372,7 @@
      </property>
      <property name="dateTime">
       <datetime>
-       <hour>8</hour>
+       <hour>7</hour>
        <minute>0</minute>
        <second>0</second>
        <year>2020</year>
@@ -527,8 +527,89 @@
    </widget>
    <widget class="QWidget" name="tabTile">
     <attribute name="title">
-     <string>Tiling?</string>
+     <string>Tiling</string>
     </attribute>
+    <widget class="QComboBox" name="comboBoxTileZLevel">
+     <property name="geometry">
+      <rect>
+       <x>260</x>
+       <y>30</y>
+       <width>121</width>
+       <height>25</height>
+      </rect>
+     </property>
+     <property name="placeholderText">
+      <string>Select Z Level</string>
+     </property>
+     <item>
+      <property name="text">
+       <string>10 (~40km)</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>11 (~20km)</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>12 (~10km)</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>13 (~5km)</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>14 (~2.5km)</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>15 (~1.2km)</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>16 (~600m)</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>17 (~300m)</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>18 (~150m)</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>19 (~75m)</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>20 (~38m)</string>
+      </property>
+     </item>
+    </widget>
+    <widget class="QLabel" name="labelSelectZLevel">
+     <property name="geometry">
+      <rect>
+       <x>100</x>
+       <y>30</y>
+       <width>191</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Select Z Level  to tile:</string>
+     </property>
+    </widget>
    </widget>
   </widget>
  </widget>
