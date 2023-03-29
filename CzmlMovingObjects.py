@@ -273,7 +273,7 @@ class CzmlMovingObjects:
             self.dlg.comboBoxClockStep.setDisabled(1)
 
     def checkApproximateEdgeSize(self):
-        print('nothing')
+        print('nothing else')
 
     def run(self):
         """Run method that performs all the real work"""
