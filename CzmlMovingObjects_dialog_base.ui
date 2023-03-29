@@ -23,33 +23,17 @@
     </rect>
    </property>
    <property name="currentIndex">
-    <number>2</number>
+    <number>0</number>
    </property>
    <widget class="QWidget" name="tabLayer">
     <attribute name="title">
-     <string>Set Objects</string>
+     <string>Settings</string>
     </attribute>
-    <widget class="QLabel" name="groupByLabel">
-     <property name="enabled">
-      <bool>false</bool>
-     </property>
-     <property name="geometry">
-      <rect>
-       <x>180</x>
-       <y>114</y>
-       <width>151</width>
-       <height>20</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Group By Attribute:</string>
-     </property>
-    </widget>
     <widget class="QComboBox" name="select_layer_comboBox">
      <property name="geometry">
       <rect>
-       <x>160</x>
-       <y>30</y>
+       <x>340</x>
+       <y>80</y>
        <width>400</width>
        <height>27</height>
       </rect>
@@ -61,24 +45,11 @@
       <string>Select a point layer...</string>
      </property>
     </widget>
-    <widget class="QComboBox" name="groupByComboBox">
-     <property name="enabled">
-      <bool>false</bool>
-     </property>
-     <property name="geometry">
-      <rect>
-       <x>330</x>
-       <y>110</y>
-       <width>200</width>
-       <height>27</height>
-      </rect>
-     </property>
-    </widget>
     <widget class="QPushButton" name="refresh_attributes_pushButton">
      <property name="geometry">
       <rect>
-       <x>270</x>
-       <y>70</y>
+       <x>340</x>
+       <y>120</y>
        <width>141</width>
        <height>27</height>
       </rect>
@@ -90,27 +61,14 @@
     <widget class="QLabel" name="select_layer_label">
      <property name="geometry">
       <rect>
-       <x>40</x>
-       <y>34</y>
+       <x>220</x>
+       <y>80</y>
        <width>111</width>
        <height>20</height>
       </rect>
      </property>
      <property name="text">
       <string>Select a Layer:</string>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="browse_pushButton">
-     <property name="geometry">
-      <rect>
-       <x>40</x>
-       <y>290</y>
-       <width>91</width>
-       <height>27</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Browse</string>
      </property>
     </widget>
     <widget class="QDialogButtonBox" name="button_box">
@@ -129,142 +87,414 @@
       <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
      </property>
     </widget>
-    <widget class="QLineEdit" name="lineEditFileName">
+    <widget class="QLabel" name="labelSelectBestFitScenario">
      <property name="geometry">
       <rect>
-       <x>160</x>
-       <y>290</y>
-       <width>501</width>
-       <height>27</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QComboBox" name="comboBoxTimeZone">
-     <property name="geometry">
-      <rect>
-       <x>330</x>
-       <y>250</y>
-       <width>201</width>
-       <height>27</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QLabel" name="group_by_label_2">
-     <property name="geometry">
-      <rect>
-       <x>220</x>
-       <y>250</y>
-       <width>91</width>
-       <height>20</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Time Zone:</string>
-     </property>
-    </widget>
-    <widget class="QRadioButton" name="radioButtonFanout">
-     <property name="geometry">
-      <rect>
-       <x>30</x>
-       <y>113</y>
-       <width>131</width>
-       <height>25</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Fanout Dataset</string>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="pushButtonSelectFolder">
-     <property name="enabled">
-      <bool>false</bool>
-     </property>
-     <property name="geometry">
-      <rect>
-       <x>40</x>
-       <y>350</y>
-       <width>131</width>
-       <height>27</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>select Folder</string>
-     </property>
-    </widget>
-    <widget class="QLineEdit" name="lineEditFolderName">
-     <property name="enabled">
-      <bool>false</bool>
-     </property>
-     <property name="geometry">
-      <rect>
-       <x>180</x>
-       <y>350</y>
+       <x>35</x>
+       <y>45</y>
        <width>301</width>
-       <height>27</height>
+       <height>19</height>
       </rect>
      </property>
-    </widget>
-    <widget class="QLineEdit" name="lineEditFileNamePrefix">
-     <property name="enabled">
-      <bool>false</bool>
+     <property name="text">
+      <string>Select best scenario fits to your purpose:</string>
      </property>
+    </widget>
+    <widget class="QComboBox" name="comboBoxSelectScenario">
      <property name="geometry">
       <rect>
-       <x>490</x>
-       <y>350</y>
-       <width>161</width>
+       <x>340</x>
+       <y>41</y>
+       <width>400</width>
        <height>27</height>
       </rect>
      </property>
      <property name="placeholderText">
-      <string>Type Prefix for Files</string>
+      <string>Select an option</string>
      </property>
+     <property name="frame">
+      <bool>true</bool>
+     </property>
+     <item>
+      <property name="text">
+       <string>Single CZML File</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Separate CZML Files for every instance</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Separate CZML Files within XYZ Tiles</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Singular CZML Files in Time Slices</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Separate CZML Files within XYZ Tiles in Time Slices</string>
+      </property>
+     </item>
     </widget>
-    <widget class="QLabel" name="labelSelectAttributeForTime">
+    <widget class="QLabel" name="labelStep1">
      <property name="geometry">
       <rect>
-       <x>75</x>
-       <y>155</y>
-       <width>231</width>
-       <height>20</height>
+       <x>100</x>
+       <y>10</y>
+       <width>591</width>
+       <height>19</height>
       </rect>
      </property>
      <property name="text">
-      <string>Select Attribute for Seconds* :</string>
+      <string>STEP 1 - Select a scenario fits to your purpose and set up your dataset.</string>
+     </property>
+     <property name="textFormat">
+      <enum>Qt::AutoText</enum>
      </property>
     </widget>
-    <widget class="QComboBox" name="comboBoxSeconds">
+    <widget class="QGroupBox" name="groupBoxGeneralSettings">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
      <property name="geometry">
       <rect>
-       <x>330</x>
-       <y>150</y>
-       <width>201</width>
-       <height>27</height>
+       <x>20</x>
+       <y>180</y>
+       <width>751</width>
+       <height>71</height>
       </rect>
      </property>
+     <property name="title">
+      <string/>
+     </property>
+     <widget class="QLabel" name="labelSelectAttributeForTime">
+      <property name="geometry">
+       <rect>
+        <x>13</x>
+        <y>14</y>
+        <width>231</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Select Attribute for Seconds* :</string>
+      </property>
+     </widget>
+     <widget class="QComboBox" name="comboBoxSeconds">
+      <property name="geometry">
+       <rect>
+        <x>246</x>
+        <y>10</y>
+        <width>201</width>
+        <height>27</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QComboBox" name="comboBoxShowAs">
+      <property name="geometry">
+       <rect>
+        <x>619</x>
+        <y>17</y>
+        <width>121</width>
+        <height>27</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QLabel" name="labelShowAs">
+      <property name="geometry">
+       <rect>
+        <x>539</x>
+        <y>21</y>
+        <width>71</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Show As:</string>
+      </property>
+     </widget>
+     <widget class="QComboBox" name="comboBoxTimeZone">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>246</x>
+        <y>40</y>
+        <width>201</width>
+        <height>27</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QLabel" name="group_by_label_2">
+      <property name="geometry">
+       <rect>
+        <x>153</x>
+        <y>44</y>
+        <width>91</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Time Zone:</string>
+      </property>
+     </widget>
     </widget>
-    <widget class="QLabel" name="labelShowAs">
+    <widget class="QGroupBox" name="groupBoxSingleOutput">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
      <property name="geometry">
       <rect>
-       <x>40</x>
-       <y>204</y>
-       <width>71</width>
-       <height>20</height>
+       <x>20</x>
+       <y>260</y>
+       <width>751</width>
+       <height>51</height>
       </rect>
      </property>
-     <property name="text">
-      <string>Show As:</string>
+     <property name="title">
+      <string/>
      </property>
+     <widget class="QPushButton" name="browse_pushButton">
+      <property name="geometry">
+       <rect>
+        <x>130</x>
+        <y>14</y>
+        <width>91</width>
+        <height>27</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Browse</string>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="lineEditFileName">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>240</x>
+        <y>14</y>
+        <width>501</width>
+        <height>27</height>
+       </rect>
+      </property>
+     </widget>
     </widget>
-    <widget class="QComboBox" name="comboBoxShowAs">
+    <widget class="QGroupBox" name="groupBoxGroupBy">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
      <property name="geometry">
       <rect>
-       <x>120</x>
-       <y>200</y>
-       <width>121</width>
-       <height>27</height>
+       <x>20</x>
+       <y>320</y>
+       <width>381</width>
+       <height>51</height>
       </rect>
      </property>
+     <property name="title">
+      <string/>
+     </property>
+     <widget class="QComboBox" name="comboBoxGroupBy">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>170</x>
+        <y>14</y>
+        <width>200</width>
+        <height>27</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QLabel" name="labelGroupByAttribute">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>16</y>
+        <width>151</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Group By Attribute:</string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QGroupBox" name="groupBoxZLevel">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>410</x>
+       <y>320</y>
+       <width>361</width>
+       <height>51</height>
+      </rect>
+     </property>
+     <property name="title">
+      <string/>
+     </property>
+     <widget class="QComboBox" name="comboBoxSelectZLevel">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>200</x>
+        <y>16</y>
+        <width>121</width>
+        <height>25</height>
+       </rect>
+      </property>
+      <property name="placeholderText">
+       <string>Select Z Level</string>
+      </property>
+      <item>
+       <property name="text">
+        <string>10 (~40km)</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>11 (~20km)</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>12 (~10km)</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>13 (~5km)</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>14 (~2.5km)</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>15 (~1.2km)</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>16 (~600m)</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>17 (~300m)</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>18 (~150m)</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>19 (~75m)</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>20 (~38m)</string>
+       </property>
+      </item>
+     </widget>
+     <widget class="QLabel" name="labelSelectZLevel">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>40</x>
+        <y>19</y>
+        <width>191</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Select Z Level  to tile:</string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QGroupBox" name="groupBoxFolderOutput">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>380</y>
+       <width>751</width>
+       <height>51</height>
+      </rect>
+     </property>
+     <property name="title">
+      <string/>
+     </property>
+     <widget class="QLineEdit" name="lineEditFileNamePrefix">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>520</x>
+        <y>15</y>
+        <width>161</width>
+        <height>27</height>
+       </rect>
+      </property>
+      <property name="placeholderText">
+       <string>Type Prefix for Files</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButtonSelectFolder">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>70</x>
+        <y>15</y>
+        <width>131</width>
+        <height>27</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>select Folder</string>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="lineEditFolderName">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>210</x>
+        <y>15</y>
+        <width>301</width>
+        <height>27</height>
+       </rect>
+      </property>
+     </widget>
     </widget>
    </widget>
    <widget class="QWidget" name="tabClock">
@@ -301,7 +531,7 @@
      </property>
      <property name="dateTime">
       <datetime>
-       <hour>9</hour>
+       <hour>8</hour>
        <minute>0</minute>
        <second>0</second>
        <year>2020</year>
@@ -343,7 +573,7 @@
      </property>
      <property name="dateTime">
       <datetime>
-       <hour>8</hour>
+       <hour>7</hour>
        <minute>0</minute>
        <second>0</second>
        <year>2020</year>
@@ -372,7 +602,7 @@
      </property>
      <property name="dateTime">
       <datetime>
-       <hour>7</hour>
+       <hour>6</hour>
        <minute>0</minute>
        <second>0</second>
        <year>2020</year>
@@ -526,90 +756,12 @@
     </widget>
    </widget>
    <widget class="QWidget" name="tabTile">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
     <attribute name="title">
      <string>Tiling</string>
     </attribute>
-    <widget class="QComboBox" name="comboBoxTileZLevel">
-     <property name="geometry">
-      <rect>
-       <x>260</x>
-       <y>30</y>
-       <width>121</width>
-       <height>25</height>
-      </rect>
-     </property>
-     <property name="placeholderText">
-      <string>Select Z Level</string>
-     </property>
-     <item>
-      <property name="text">
-       <string>10 (~40km)</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>11 (~20km)</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>12 (~10km)</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>13 (~5km)</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>14 (~2.5km)</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>15 (~1.2km)</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>16 (~600m)</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>17 (~300m)</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>18 (~150m)</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>19 (~75m)</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>20 (~38m)</string>
-      </property>
-     </item>
-    </widget>
-    <widget class="QLabel" name="labelSelectZLevel">
-     <property name="geometry">
-      <rect>
-       <x>100</x>
-       <y>30</y>
-       <width>191</width>
-       <height>20</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Select Z Level  to tile:</string>
-     </property>
-    </widget>
    </widget>
   </widget>
  </widget>

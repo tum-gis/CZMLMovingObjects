@@ -23,7 +23,7 @@
 """
 from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication
 from qgis.PyQt.QtGui import QIcon
-from qgis.PyQt.QtWidgets import QAction, QFileDialog
+from qgis.PyQt.QtWidgets import QAction, QFileDialog, QErrorMessage
 from qgis.core import QgsProject, Qgis, QgsCoordinateTransform, QgsCoordinateReferenceSystem, QgsVectorLayerUtils
 # Initialize Qt resources from file resources.py
 from .resources import *
@@ -71,6 +71,14 @@ class CzmlMovingObjects:
         # Declare instance attributes
         self.actions = []
         self.menu = self.tr(u'&CZML Moving Objects')
+
+        self.scenariosDict = {
+            1:"Single CZML File"
+            ,2:"Separate CZML files for every moving object"
+            ,3:"Separate CZML files within XYZ Tiles"
+            ,4:"Singular CZML files in Time Slices (T Tiles)"
+            ,5:"Separate CZML Files within XYZ Tiles in Time Slices (XYZ+T)"
+            }
 
         # Check if plugin was started the first time in current QGIS session
         # Must be set in initGui() to survive plugin reloads
@@ -200,10 +208,17 @@ class CzmlMovingObjects:
         return pointLayerNames
 
     def fillComboBoxShowAs(self):
-        showAsOptions = ('Point', 'Point w Color')
+        showAsOptions = ('Select an option','Point')
         self.dlg.comboBoxShowAs.clear()
-        self.dlg.comboBoxShowAs.addItem('Not Selected')
         self.dlg.comboBoxShowAs.addItems(showAsOptions)
+
+    def switchComboBoxSelectScenario(self, num):
+        return self.scenarioDict.get(num, "invalid input!")
+        
+    def fillComboBoxSelectScenario(self):
+        self.dlg.comboBoxSelectScenario.clear()
+        self.dlg.comboBoxSelectScenario.addItem('Select a scenario...')
+        self.dlg.comboBoxSelectScenario.addItems(self.scenariosDict.values())
 
     #MK #Read layer attributes and populate attribute comboxes with them.
     def fill_group_by_combobox(self):
@@ -213,9 +228,9 @@ class CzmlMovingObjects:
                 if currentLayers.get(layer).name() == self.dlg.select_layer_comboBox.currentText():
                     selectedLayer = currentLayers.get(layer)
                     #print(selectedLayer.attributeAliases())
-                    self.dlg.groupByComboBox.clear()
-                    self.dlg.groupByComboBox.addItem('Not Selected')
-                    self.dlg.groupByComboBox.addItems(selectedLayer.attributeAliases())
+                    self.dlg.comboBoxGroupBy.clear()
+                    self.dlg.comboBoxGroupBy.addItem('Not Selected')
+                    self.dlg.comboBoxGroupBy.addItems(selectedLayer.attributeAliases())
                     self.dlg.comboBoxSeconds.clear()
                     self.dlg.comboBoxSeconds.addItem('Not Selected')
                     self.dlg.comboBoxSeconds.addItems(selectedLayer.attributeAliases())
@@ -238,23 +253,41 @@ class CzmlMovingObjects:
         folderName = QFileDialog.getExistingDirectory(self.dlg, "Select a folder", "", QFileDialog.ShowDirsOnly)
         self.dlg.lineEditFolderName.setText(folderName)
 
-    def checkFanout(self):
-        if self.dlg.radioButtonFanout.isChecked():
-            self.dlg.groupByLabel.setEnabled(1)
-            self.dlg.groupByComboBox.setEnabled(1)
-            self.dlg.pushButtonSelectFolder.setEnabled(1)
-            self.dlg.lineEditFolderName.setEnabled(1)
-            self.dlg.lineEditFileNamePrefix.setEnabled(1)
-            self.dlg.browse_pushButton.setDisabled(1)
-            self.dlg.lineEditFileName.setDisabled(1)
+    def checkScenario(self):
+        if self.dlg.comboBoxSelectScenario.currentIndex()==1:
+            print('Single CZML File --> option selected.')
+             # Enable 
+            self.dlg.groupBoxGeneralSettings.setEnabled(1)
+            self.dlg.groupBoxSingleOutput.setEnabled(1)
+            # Disable
+            self.dlg.groupBoxGroupBy.setDisabled(1)
+            self.dlg.groupBoxFolderOutput.setDisabled(1)
+            self.dlg.groupBoxZLevel.setDisabled(1)
+        elif self.dlg.comboBoxSelectScenario.currentIndex()==2:
+            print('Separate CZML Files for every moving object --> option selected.')
+            # Enable 
+            self.dlg.groupBoxGeneralSettings.setEnabled(1)
+            self.dlg.groupBoxGroupBy.setEnabled(1)
+            self.dlg.groupBoxFolderOutput.setEnabled(1)
+            # Disable
+            self.dlg.groupBoxSingleOutput.setDisabled(1)
+            self.dlg.groupBoxZLevel.setDisabled(1)
+        elif self.dlg.comboBoxSelectScenario.currentIndex()==3:
+            print('Separate CZML Files within XYZ Tiles --> option selected.')
+            # Enable
+            self.dlg.groupBoxGeneralSettings.setEnabled(1)
+            self.dlg.groupBoxFolderOutput.setEnabled(1)
+            self.dlg.groupBoxZLevel.setEnabled(1)
+            # Disable
+            self.dlg.groupBoxSingleOutput.setDisabled(1)
+            self.dlg.groupBoxGroupBy.setDisabled(1)
+
+        elif self.dlg.comboBoxSelectScenario.currentIndex()==4:
+            print('Singular CZML Files in Time Slices --> option selected.')
+        elif self.dlg.comboBoxSelectScenario.currentIndex()==5:
+            print('Separate CZML Files within XYZ Tiles in Time Slices --> option selected.')
         else:
-            self.dlg.groupByLabel.setDisabled(1)
-            self.dlg.groupByComboBox.setDisabled(1)
-            self.dlg.pushButtonSelectFolder.setDisabled(1)
-            self.dlg.lineEditFolderName.setDisabled(1)
-            self.dlg.lineEditFileNamePrefix.setDisabled(1)
-            self.dlg.browse_pushButton.setEnabled(1)
-            self.dlg.lineEditFileName.setEnabled(1)
+            print('Oh no!')
 
     def checkClockButton(self):
         if self.dlg.radioButtonClockConf.isChecked():
@@ -272,8 +305,13 @@ class CzmlMovingObjects:
             self.dlg.comboBoxClockRange.setDisabled(1)
             self.dlg.comboBoxClockStep.setDisabled(1)
 
-    def checkApproximateEdgeSize(self):
-        print('nothing else')
+    def disableGroupsAtStart(self):
+        # Disable
+        self.dlg.groupBoxGeneralSettings.setDisabled(1)
+        self.dlg.groupBoxSingleOutput.setDisabled(1)
+        self.dlg.groupBoxGroupBy.setDisabled(1)
+        self.dlg.groupBoxZLevel.setDisabled(1)
+        self.dlg.groupBoxFolderOutput.setDisabled(1)
 
     def run(self):
         """Run method that performs all the real work"""
@@ -292,14 +330,15 @@ class CzmlMovingObjects:
         #print(pytz.all_timezones)
         self.dlg.comboBoxTimeZone.setCurrentText('UTC')
 
+        self.fillComboBoxSelectScenario()
+
+        self.disableGroupsAtStart()
+
         #If Configure Cesium Clock radio button element selected, then activate clock parameters and get them.
         self.dlg.radioButtonClockConf.clicked.connect(self.checkClockButton)   
 
         #If Fanout Dataset radio button checked, then activate "Group By Attribute" dropdown menu.
-        self.dlg.radioButtonFanout.clicked.connect(self.checkFanout)   
-
-        #
-        self.dlg.comboBoxTileZLevel.currentIndexChanged.connect(self.checkApproximateEdgeSize) 
+        self.dlg.comboBoxSelectScenario.currentIndexChanged.connect(self.checkScenario)   
 
         #MK Populate Layers ComboBox with existed poitn based vector layers
 
@@ -357,12 +396,39 @@ class CzmlMovingObjects:
 
             beginningLines ='[\n' +  json.dumps( documentMetadata.getMetaDict(), indent=4 )
 
-            groupByAttribute = self.dlg.groupByComboBox.currentText()
+            groupByAttribute = self.dlg.comboBoxGroupBy.currentText()
             secondsAttribute = self.dlg.comboBoxSeconds.currentText()
             fanoutPrefix = self.dlg.lineEditFileNamePrefix.text()
             fanoutFolder = self.dlg.lineEditFolderName.text()
-
-            if self.dlg.radioButtonFanout.isChecked() and groupByAttribute != 'Not Selected':
+            
+            if self.dlg.comboBoxSelectScenario.currentIndex()==1:
+                exportedFile = open(fileURL, mode='w', encoding='utf-8')
+                idn = 'Vehicle'
+                positions = []
+                transform2Cartesian = pyproj.Transformer.from_crs("EPSG:4326", "EPSG:4978", always_xy = True)
+                for feature in selectedLayer.getFeatures():
+                    point = feature.geometry().asPoint()
+                    secondz = feature[secondsAttribute]
+                    cartesianPoint = (transform2Cartesian.transform(point.x(), point.y(), 0))
+                    positions.append(round(secondz,3))
+                    positions.append(round(cartesianPoint[0],2))
+                    positions.append(round(cartesianPoint[1],2))
+                    positions.append(round(cartesianPoint[2],2))
+                vehiclePosition = Vehicle.Position(positions)
+                if self.dlg.comboBoxShowAs.currentText() == 'Point':
+                    vehiclePoint = Vehicle.Point()
+                else: 
+                    #Change here and add other options later
+                    print('Since there is no other available option yet, please get by with point object!')
+                    vehiclePoint = Vehicle.Point()
+                vehicleData = Vehicle(idn, vehiclePosition, vehiclePoint)
+                #print(vehicleData.getVehicleDict())
+                featureLines = ',\n' + json.dumps( vehicleData.getVehicleDict(), indent=4 )
+                wholeDocument = beginningLines + featureLines +'\n]\n'
+                print(wholeDocument)
+                exportedFile.write(wholeDocument)
+                exportedFile.close()
+            elif self.dlg.comboBoxSelectScenario.currentIndex()==2 and groupByAttribute != 'Not Selected':
                 list_of_values = QgsVectorLayerUtils.getValues(selectedLayer, groupByAttribute)[0]
                 list_of_values = list(set(list_of_values))
                 for vehicle in list_of_values:
@@ -394,34 +460,8 @@ class CzmlMovingObjects:
                     print(wholeDocument)
                     exportedFile.write(wholeDocument)
                     exportedFile.close()
-            else:
-                exportedFile = open(fileURL, mode='w', encoding='utf-8')
-                idn = 'Vehicle'
-                positions = []
-                transform2Cartesian = pyproj.Transformer.from_crs("EPSG:4326", "EPSG:4978", always_xy = True)
-                for feature in selectedLayer.getFeatures():
-                    point = feature.geometry().asPoint()
-                    secondz = feature[secondsAttribute]
-                    cartesianPoint = (transform2Cartesian.transform(point.x(), point.y(), 0))
-                    positions.append(round(secondz,3))
-                    positions.append(round(cartesianPoint[0],2))
-                    positions.append(round(cartesianPoint[1],2))
-                    positions.append(round(cartesianPoint[2],2))
-                vehiclePosition = Vehicle.Position(positions)
-                if self.dlg.comboBoxShowAs.currentText() == 'Point':
-                    vehiclePoint = Vehicle.Point()
-                else: 
-                    #Change here and add other options later
-                    print('Since there is no other available option yet, please get by with point object!')
-                    vehiclePoint = Vehicle.Point()
-                vehicleData = Vehicle(idn, vehiclePosition, vehiclePoint)
-                #print(vehicleData.getVehicleDict())
-                featureLines = ',\n' + json.dumps( vehicleData.getVehicleDict(), indent=4 )
-                wholeDocument = beginningLines + featureLines +'\n]\n'
-                print(wholeDocument)
-                exportedFile.write(wholeDocument)
-                exportedFile.close()
-
+            elif self.dlg.comboBoxSelectScenario.currentIndex()==3:
+                print('Lets see')
 
             # Do something useful here - delete the line containing pass and
             # substitute with your code.
