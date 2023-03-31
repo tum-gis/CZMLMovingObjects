@@ -24,7 +24,7 @@
 from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction, QFileDialog, QErrorMessage
-from qgis.core import QgsProject, Qgis, QgsCoordinateTransform, QgsCoordinateReferenceSystem, QgsVectorLayerUtils
+from qgis.core import QgsProject, Qgis, QgsCoordinateTransform, QgsCoordinateReferenceSystem, QgsVectorLayerUtils, QgsFeature, QgsGeometry, QgsPoint, QgsTileMatrix
 # Initialize Qt resources from file resources.py
 from .resources import *
 # Import the code for the dialog
@@ -196,6 +196,14 @@ class CzmlMovingObjects:
                 action)
             self.iface.removeToolBarIcon(action)
     
+    # Ask all available elements of an object in python terminal:
+
+    def whoAreYou(self, objectName):
+        print('Type: ', type(objectName), '\n')
+        print('Directory: ', dir(objectName), '\n')
+        print('Self: ', objectName, '\n')
+
+
     #MK Get point based vector layers with names to fill related form elements
     def getPointVectorLayers(self):
         currentLayers = QgsProject.instance().mapLayers()
@@ -278,9 +286,10 @@ class CzmlMovingObjects:
             self.dlg.groupBoxGeneralSettings.setEnabled(1)
             self.dlg.groupBoxFolderOutput.setEnabled(1)
             self.dlg.groupBoxZLevel.setEnabled(1)
+            self.dlg.groupBoxGroupBy.setEnabled(1)
             # Disable
             self.dlg.groupBoxSingleOutput.setDisabled(1)
-            self.dlg.groupBoxGroupBy.setDisabled(1)
+            
 
         elif self.dlg.comboBoxSelectScenario.currentIndex()==4:
             print('Singular CZML Files in Time Slices --> option selected.')
@@ -433,9 +442,7 @@ class CzmlMovingObjects:
                 list_of_values = list(set(list_of_values))
                 for vehicle in list_of_values:
                     quotedVehicle = parse.quote_plus(vehicle)
-                    print(quotedVehicle)
                     fileURL=fanoutFolder+os.path.sep+fanoutPrefix+quotedVehicle+'.czml'
-                    print(fileURL)
                     exportedFile = open(fileURL, mode='w', encoding='utf-8')
                     idn = 'Vehicle'+vehicle
                     positions = []
@@ -444,6 +451,7 @@ class CzmlMovingObjects:
                         point = feature.geometry().asPoint()
                         secondz = feature[secondsAttribute]
                         cartesianPoint = (transform2Cartesian.transform(point.x(), point.y(), 0))
+                        positions.append(round(secondz,3))
                         positions.append(cartesianPoint[0])
                         positions.append(cartesianPoint[1])
                         positions.append(cartesianPoint[2])
@@ -461,8 +469,32 @@ class CzmlMovingObjects:
                     exportedFile.write(wholeDocument)
                     exportedFile.close()
             elif self.dlg.comboBoxSelectScenario.currentIndex()==3:
-                print('Lets see')
+                print('melaba')
+                '''
+                fileURL=fanoutFolder+os.path.sep+'test_xyz'+'.czml'
+                exportedFile = open(fileURL, mode='w', encoding='utf-8')
+                idn = 'Vehicle'
+                #transform2Cartesian = pyproj.Transformer.from_crs("EPSG:4326", "EPSG:4978", always_xy = True)
+                
+                list_of_values = QgsVectorLayerUtils.getValues(selectedLayer, groupByAttribute)[0]
+                list_of_values = list(set(list_of_values))
 
+                for vehicle in list_of_values:
+                    quotedVehicle = parse.quote_plus(vehicle)
+                    pointsArray = []
+                    
+                    for feature in selectedLayer.getFeatures():
+                        pointWkt = feature.geometry().asWkt()
+                        pointInstance = QgsPoint()
+                        pointInstance.fromWkt(pointWkt)
+                        pointsArray.append(pointInstance)
+                    
+                    movingObjectAsLine = QgsFeature()
+                    movingObjectAsLine.setGeometry(QgsGeometry.fromPolyline(pointsArray))
+                    #self.whoAreYou(movingObjectAsLine.geometry())
+
+                exportedFile.close()
+                '''
             # Do something useful here - delete the line containing pass and
             # substitute with your code.
             pass
