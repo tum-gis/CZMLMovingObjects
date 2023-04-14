@@ -16,11 +16,11 @@ class Vehicle:
 		self.dict[key] = value
 		return self.dict
 	class Position:
-		def __init__(self, cartesian, interpolationAlgorithm = 'LAGRANGE', interpolationDegree = 1, epoch = '2012-08-04T16:00:00Z'):
+		def __init__(self, cartesian, epoch, interpolationAlgorithm = 'LAGRANGE', interpolationDegree = 1):
 			self.cartesian = cartesian
+			self.epoch = epoch
 			self.interpolationAlgorithm = interpolationAlgorithm
 			self.interpolationDegree = interpolationDegree
-			self.epoch = epoch
 			self.positionDict = {
 				"interpolationAlgorithm":self.interpolationAlgorithm
 				,"interpolationDegree":self.interpolationDegree

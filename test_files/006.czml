@@ -2,14 +2,14 @@
 {
     "version": "1.0",
     "id": "document",
-    "name": "test_data_w_Z-M"
+    "name": "test_data"
 },
 {
     "id": "Vehicle",
     "position": {
         "interpolationAlgorithm": "LAGRANGE",
         "interpolationDegree": 1,
-        "epoch": "2012-08-04T16:00:00Z",
+        "epoch": "2012-08-04T16:00:00+00:00",
         "cartesian": [
             0,
             4173463.25,

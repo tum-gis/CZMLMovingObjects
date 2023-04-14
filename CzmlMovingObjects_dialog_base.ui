@@ -198,8 +198,8 @@
      <widget class="QComboBox" name="comboBoxShowAs">
       <property name="geometry">
        <rect>
-        <x>619</x>
-        <y>17</y>
+        <x>620</x>
+        <y>40</y>
         <width>121</width>
         <height>27</height>
        </rect>
@@ -208,8 +208,8 @@
      <widget class="QLabel" name="labelShowAs">
       <property name="geometry">
        <rect>
-        <x>539</x>
-        <y>21</y>
+        <x>540</x>
+        <y>40</y>
         <width>71</width>
         <height>20</height>
        </rect>
@@ -242,6 +242,29 @@
       </property>
       <property name="text">
        <string>Time Zone:</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="labelEpoch">
+      <property name="geometry">
+       <rect>
+        <x>450</x>
+        <y>10</y>
+        <width>161</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Epoch (Start of Move):</string>
+      </property>
+     </widget>
+     <widget class="QComboBox" name="comboBoxEpoch">
+      <property name="geometry">
+       <rect>
+        <x>620</x>
+        <y>10</y>
+        <width>121</width>
+        <height>27</height>
+       </rect>
       </property>
      </widget>
     </widget>
@@ -364,12 +387,12 @@
       </property>
       <item>
        <property name="text">
-        <string>10 (~40km)</string>
+        <string extracomment="(~40km)">10</string>
        </property>
       </item>
       <item>
        <property name="text">
-        <string>11 (~20km)</string>
+        <string extracomment="(~20km)">11</string>
        </property>
       </item>
       <item>
@@ -414,7 +437,7 @@
       </item>
       <item>
        <property name="text">
-        <string>20 (~38m)</string>
+        <string extracomment="(~38m)">20</string>
        </property>
       </item>
      </widget>
@@ -531,7 +554,7 @@
      </property>
      <property name="dateTime">
       <datetime>
-       <hour>8</hour>
+       <hour>6</hour>
        <minute>0</minute>
        <second>0</second>
        <year>2020</year>
@@ -573,7 +596,7 @@
      </property>
      <property name="dateTime">
       <datetime>
-       <hour>7</hour>
+       <hour>5</hour>
        <minute>0</minute>
        <second>0</second>
        <year>2020</year>
@@ -602,7 +625,7 @@
      </property>
      <property name="dateTime">
       <datetime>
-       <hour>6</hour>
+       <hour>4</hour>
        <minute>0</minute>
        <second>0</second>
        <year>2020</year>

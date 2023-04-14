@@ -40,6 +40,7 @@ import json
 from urllib import parse
 from .Metadata import Metadata
 from .Vehicle import Vehicle
+import math
 
 class CzmlMovingObjects:
     """QGIS Plugin Implementation."""
@@ -75,9 +76,9 @@ class CzmlMovingObjects:
         self.scenariosDict = {
             1:"Single CZML File"
             ,2:"Separate CZML files for every moving object"
-            ,3:"Separate CZML files within XYZ Tiles"
-            ,4:"Singular CZML files in Time Slices (T Tiles)"
-            ,5:"Separate CZML Files within XYZ Tiles in Time Slices (XYZ+T)"
+            ,3:"CZML files within XYZ Tiles"
+            ,4:"CZML files in Time Slices (T Tiles)"
+            ,5:"CZML Files within XYZ Tiles in Time Slices (XYZ+T)"
             }
 
         # Check if plugin was started the first time in current QGIS session
@@ -203,6 +204,20 @@ class CzmlMovingObjects:
         print('Directory: ', dir(objectName), '\n')
         print('Self: ', objectName, '\n')
 
+    # Following 2 functions taken from: https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#Lon./lat._to_tile_numbers_2
+    def deg2num(self, lat_deg, lon_deg, zoom):
+        lat_rad = math.radians(lat_deg)
+        n = 2.0 ** zoom
+        xtile = int((lon_deg + 180.0) / 360.0 * n)
+        ytile = int((1.0 - math.asinh(math.tan(lat_rad)) / math.pi) / 2.0 * n)
+        return (xtile, ytile)
+
+    def num2deg(self, xtile, ytile, zoom):
+        n = 2.0 ** zoom
+        lon_deg = xtile / n * 360.0 - 180.0
+        lat_rad = math.atan(math.sinh(math.pi * (1 - 2 * ytile / n)))
+        lat_deg = math.degrees(lat_rad)
+        return (lat_deg, lon_deg)
 
     #MK Get point based vector layers with names to fill related form elements
     def getPointVectorLayers(self):
@@ -242,6 +257,9 @@ class CzmlMovingObjects:
                     self.dlg.comboBoxSeconds.clear()
                     self.dlg.comboBoxSeconds.addItem('Not Selected')
                     self.dlg.comboBoxSeconds.addItems(selectedLayer.attributeAliases())
+                    self.dlg.comboBoxEpoch.clear()
+                    self.dlg.comboBoxEpoch.addItem('Not Selected')
+                    self.dlg.comboBoxEpoch.addItems(selectedLayer.attributeAliases())
         else:
             print('Please select a valid layer.')
 
@@ -281,13 +299,14 @@ class CzmlMovingObjects:
             self.dlg.groupBoxSingleOutput.setDisabled(1)
             self.dlg.groupBoxZLevel.setDisabled(1)
         elif self.dlg.comboBoxSelectScenario.currentIndex()==3:
-            print('Separate CZML Files within XYZ Tiles --> option selected.')
+            print('CZML Files within XYZ Tiles --> option selected.')
             # Enable
             self.dlg.groupBoxGeneralSettings.setEnabled(1)
             self.dlg.groupBoxFolderOutput.setEnabled(1)
             self.dlg.groupBoxZLevel.setEnabled(1)
-            self.dlg.groupBoxGroupBy.setEnabled(1)
+            
             # Disable
+            self.dlg.groupBoxGroupBy.setDisabled(1)
             self.dlg.groupBoxSingleOutput.setDisabled(1)
             
 
@@ -371,12 +390,12 @@ class CzmlMovingObjects:
         if result:
             # Save File after <OK> clicked.
             fileURL = self.dlg.lineEditFileName.text()
-
+            timeZone = timezone(self.dlg.comboBoxTimeZone.currentText())
             
             #Take CZML Clock time interval options
             if self.dlg.radioButtonClockConf.isChecked():
                 selectedTimeZone = self.dlg.comboBoxTimeZone.currentText()
-                timeZone = timezone(self.dlg.comboBoxTimeZone.currentText())
+                
                 selectedClockCurrent = self.dlg.dateTimeEditClockCurrent.dateTime()
                 selectedClockCurrentLocal = timeZone.localize(selectedClockCurrent.toPyDateTime()).isoformat()
                 selectedClockBeginning = self.dlg.dateTimeEditClockBeginning.dateTime()
@@ -407,6 +426,7 @@ class CzmlMovingObjects:
 
             groupByAttribute = self.dlg.comboBoxGroupBy.currentText()
             secondsAttribute = self.dlg.comboBoxSeconds.currentText()
+            epochAttribute = self.dlg.comboBoxEpoch.currentText()
             fanoutPrefix = self.dlg.lineEditFileNamePrefix.text()
             fanoutFolder = self.dlg.lineEditFolderName.text()
             
@@ -423,7 +443,10 @@ class CzmlMovingObjects:
                     positions.append(round(cartesianPoint[0],2))
                     positions.append(round(cartesianPoint[1],2))
                     positions.append(round(cartesianPoint[2],2))
-                vehiclePosition = Vehicle.Position(positions)
+                vehicleEpoch = next(selectedLayer.getFeatures())[epochAttribute]
+                vehicleEpoch = timeZone.localize(vehicleEpoch.toPyDateTime()).isoformat()
+                #self.whoAreYou(vehicleEpoch)
+                vehiclePosition = Vehicle.Position(positions, vehicleEpoch)
                 if self.dlg.comboBoxShowAs.currentText() == 'Point':
                     vehiclePoint = Vehicle.Point()
                 else: 
@@ -455,7 +478,9 @@ class CzmlMovingObjects:
                         positions.append(cartesianPoint[0])
                         positions.append(cartesianPoint[1])
                         positions.append(cartesianPoint[2])
-                    vehiclePosition = Vehicle.Position(positions)
+                    vehicleEpoch = next(selectedLayer.getFeatures())[epochAttribute]
+                    vehicleEpoch = timeZone.localize(vehicleEpoch.toPyDateTime()).isoformat()
+                    vehiclePosition = Vehicle.Position(positions, vehicleEpoch)
                     if self.dlg.comboBoxShowAs.currentText() == 'Point':
                         vehiclePoint = Vehicle.Point()
                     else: 
@@ -469,32 +494,31 @@ class CzmlMovingObjects:
                     exportedFile.write(wholeDocument)
                     exportedFile.close()
             elif self.dlg.comboBoxSelectScenario.currentIndex()==3:
-                print('melaba')
-                '''
+                
                 fileURL=fanoutFolder+os.path.sep+'test_xyz'+'.czml'
                 exportedFile = open(fileURL, mode='w', encoding='utf-8')
                 idn = 'Vehicle'
-                #transform2Cartesian = pyproj.Transformer.from_crs("EPSG:4326", "EPSG:4978", always_xy = True)
+                selectedZoomLevel = self.dlg.comboBoxSelectZLevel.currentText()
                 
-                list_of_values = QgsVectorLayerUtils.getValues(selectedLayer, groupByAttribute)[0]
-                list_of_values = list(set(list_of_values))
+                #transform2Cartesian = pyproj.Transformer.from_crs("EPSG:4326", "EPSG:4978", always_xy = True)
+                pointsArray = []
+                
+                for feature in selectedLayer.getFeatures():
+                    pointWkt = feature.geometry().asWkt()
+                    pointInstance = QgsPoint()
+                    pointInstance.fromWkt(pointWkt)
+                    pointsArray.append(pointInstance)
+                
+                movingObjectAsLine = QgsFeature()
+                movingObjectAsLine.setGeometry(QgsGeometry.fromPolyline(pointsArray))
+                movingObjectBB = movingObjectAsLine.geometry().boundingBox()
 
-                for vehicle in list_of_values:
-                    quotedVehicle = parse.quote_plus(vehicle)
-                    pointsArray = []
-                    
-                    for feature in selectedLayer.getFeatures():
-                        pointWkt = feature.geometry().asWkt()
-                        pointInstance = QgsPoint()
-                        pointInstance.fromWkt(pointWkt)
-                        pointsArray.append(pointInstance)
-                    
-                    movingObjectAsLine = QgsFeature()
-                    movingObjectAsLine.setGeometry(QgsGeometry.fromPolyline(pointsArray))
-                    #self.whoAreYou(movingObjectAsLine.geometry())
-
+                tileMinimum = self.deg2num(movingObjectBB.yMinimum(), movingObjectBB.xMinimum(), int(selectedZoomLevel))
+                tileMaximum = self.deg2num(movingObjectBB.yMaximum(), movingObjectBB.xMaximum(), int(selectedZoomLevel))
+                print(tileMinimum)
+                print(tileMaximum)
                 exportedFile.close()
-                '''
+                
             # Do something useful here - delete the line containing pass and
             # substitute with your code.
             pass
