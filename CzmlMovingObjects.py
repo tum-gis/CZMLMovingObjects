@@ -21,10 +21,11 @@
  *                                                                         *
  ***************************************************************************/
 """
-from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication
+from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication, QVariant
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction, QFileDialog, QErrorMessage
-from qgis.core import QgsProject, Qgis, QgsCoordinateTransform, QgsCoordinateReferenceSystem, QgsVectorLayerUtils, QgsFeature, QgsGeometry, QgsPoint, QgsTileMatrix
+from qgis.core import QgsProject, Qgis, QgsCoordinateTransform, QgsCoordinateReferenceSystem, QgsVectorLayerUtils, QgsFeature, QgsGeometry, QgsPoint, QgsTileMatrix, QgsWkbTypes, QgsTileRange, QgsVectorLayer, QgsField, QgsRectangle,  QgsApplication, QgsProcessingFeedback
+
 # Initialize Qt resources from file resources.py
 from .resources import *
 # Import the code for the dialog
@@ -32,7 +33,9 @@ from .CzmlMovingObjects_dialog import CzmlMovingObjectsDialog
 import os.path
 
 # Added
-# from qgis.core import QgsProject
+from qgis.utils import *
+import sys
+from qgis import processing
 from pytz import timezone
 import pytz
 import pyproj
@@ -217,7 +220,7 @@ class CzmlMovingObjects:
         lon_deg = xtile / n * 360.0 - 180.0
         lat_rad = math.atan(math.sinh(math.pi * (1 - 2 * ytile / n)))
         lat_deg = math.degrees(lat_rad)
-        return (lat_deg, lon_deg)
+        return (lon_deg, lat_deg)
 
     #MK Get point based vector layers with names to fill related form elements
     def getPointVectorLayers(self):
@@ -260,6 +263,9 @@ class CzmlMovingObjects:
                     self.dlg.comboBoxEpoch.clear()
                     self.dlg.comboBoxEpoch.addItem('Not Selected')
                     self.dlg.comboBoxEpoch.addItems(selectedLayer.attributeAliases())
+                    self.dlg.comboBoxHeightValue.clear()
+                    self.dlg.comboBoxHeightValue.addItem('Not Selected')
+                    self.dlg.comboBoxHeightValue.addItems(selectedLayer.attributeAliases())
         else:
             print('Please select a valid layer.')
 
@@ -340,6 +346,15 @@ class CzmlMovingObjects:
         self.dlg.groupBoxGroupBy.setDisabled(1)
         self.dlg.groupBoxZLevel.setDisabled(1)
         self.dlg.groupBoxFolderOutput.setDisabled(1)
+
+    def checkPointData(self, selected_layer):
+        self.whoAreYou(selected_layer)
+
+    def getRectTile(self, x, y, zoom):
+            xMin, yMax = self.num2deg( x, y , zoom)
+            xMax, yMin = self.num2deg( x+1, y+1 , zoom)
+            rect = QgsRectangle( xMin, yMin, xMax, yMax )
+            return rect
 
     def run(self):
         """Run method that performs all the real work"""
@@ -501,22 +516,147 @@ class CzmlMovingObjects:
                 selectedZoomLevel = self.dlg.comboBoxSelectZLevel.currentText()
                 
                 #transform2Cartesian = pyproj.Transformer.from_crs("EPSG:4326", "EPSG:4978", always_xy = True)
-                pointsArray = []
+                pointsArrayZ = []
+                pointsArrayM = []
+                wktTypeOfLayer = ''
+
+                # Add temporary tiles layer into canvas
+                myUri = "polygon?crs=epsg:4326&field=column_x:integer&field=column_y:integer&field=zoom_level:integer"
+                myTiles  = QgsVectorLayer(myUri, "Temporary Tiles", "memory")
+                editMyTiles = myTiles.dataProvider()
+                QgsProject.instance().addMapLayer(myTiles)
+
+                # Add temporary linesZ layer into canvas
+                myUriLinesZ = "linestring?crs=epsg:4326&field=name:string"
+                myLinesZ = QgsVectorLayer(myUriLinesZ, "Temporary Lines with Z", "memory")
+                editMyLinesZ = myLinesZ.dataProvider()
+                QgsProject.instance().addMapLayer(myLinesZ)
                 
+                # Convert points into linestringZ
                 for feature in selectedLayer.getFeatures():
                     pointWkt = feature.geometry().asWkt()
                     pointInstance = QgsPoint()
                     pointInstance.fromWkt(pointWkt)
-                    pointsArray.append(pointInstance)
+                    wktTypeOfLayer = pointInstance.wktTypeStr()
+                    pointsArrayZ.append(pointInstance)
                 
+                # Set LineZ from points array and calculate BBOX
                 movingObjectAsLine = QgsFeature()
-                movingObjectAsLine.setGeometry(QgsGeometry.fromPolyline(pointsArray))
+                movingObjectAsLine.setGeometry(QgsGeometry.fromPolyline(pointsArrayZ))
                 movingObjectBB = movingObjectAsLine.geometry().boundingBox()
 
-                tileMinimum = self.deg2num(movingObjectBB.yMinimum(), movingObjectBB.xMinimum(), int(selectedZoomLevel))
-                tileMaximum = self.deg2num(movingObjectBB.yMaximum(), movingObjectBB.xMaximum(), int(selectedZoomLevel))
-                print(tileMinimum)
-                print(tileMaximum)
+                # Add lineZ into layer
+                movingObjectAsLine.setAttributes(["lineZ"])
+                editMyLinesZ.addFeatures( [ movingObjectAsLine ] )
+
+                # Add temporary linesM layer into canvas
+                myUriLinesM = "linestring?crs=epsg:4326&field=name:string"
+                myLinesM = QgsVectorLayer(myUriLinesM, "Temporary Lines with M", "memory")
+                editMyLinesM = myLinesM.dataProvider()
+                QgsProject.instance().addMapLayer(myLinesM)
+
+                # Convert points into linestringM
+                for feature in selectedLayer.getFeatures():
+                    pointWkt = feature.geometry().asWkt()
+                    pointInstance = QgsPoint()
+                    pointInstance.fromWkt(pointWkt)
+                    secondz = feature[secondsAttribute]
+                    pointInstance.setZ(secondz)
+                    print(pointInstance, secondz)
+                    pointsArrayM.append(pointInstance)
+
+                # Set LineM from points array and calculate BBOX
+                movingObjectAsLineM = QgsFeature()
+                movingObjectAsLineM.setGeometry(QgsGeometry.fromPolyline(pointsArrayM))
+
+                # Add lineZ into layer
+                movingObjectAsLineM.setAttributes(["lineM"])
+                editMyLinesM.addFeatures( [ movingObjectAsLineM ] )
+                
+                #tileMinimum is equal to Top-Left Tile (cause tiling starts from top left)
+                #tileMaximum is equal to Right-Bottom Tile
+                tileMinimum = self.deg2num(movingObjectBB.yMaximum(), movingObjectBB.xMinimum(), int(selectedZoomLevel))
+                tileMaximum = self.deg2num(movingObjectBB.yMinimum(), movingObjectBB.xMaximum(), int(selectedZoomLevel))
+                #print(tileMinimum, tileMaximum, wktTypeOfLayer)
+                
+                columnNumber = (tileMaximum[0] - tileMinimum[0]) + 1
+                rowNumber = (tileMaximum[1] - tileMinimum[1]) + 1
+                #print(columnNumber, rowNumber)
+
+                for i in range(columnNumber):
+                    for j in range(rowNumber):
+                        #print(i,j, tileMinimum[0]+i, tileMinimum[1]+j)
+                        tempoTile = QgsFeature()
+                        tempoRect = self.getRectTile(tileMinimum[0]+i, tileMinimum[1]+j, int(selectedZoomLevel))
+                        tempoTile.setGeometry( QgsGeometry.fromRect(tempoRect) )
+                        tempoTile.setAttributes([tileMinimum[0]+i,tileMinimum[1]+j,int(selectedZoomLevel)])
+                        editMyTiles.addFeatures( [ tempoTile ] )
+                        j +=1
+                    i += 1
+
+                input_layer_z = myLinesZ.source()
+                input_layer_m = myLinesM.source()
+                overlay_layer = myTiles.source()
+                
+                params1 = { 'INPUT' : input_layer_z, 'OVERLAY' : overlay_layer, 'OUTPUT' : 'memory:LineZ'}
+                result1 = processing.run("native:intersection", params1)
+                cutted_lines_w_z = result1['OUTPUT']
+                QgsProject.instance().addMapLayer(cutted_lines_w_z)
+                output_layer_z = cutted_lines_w_z.source()
+                cutted_lines_w_z.startEditing()
+                cutted_lines_w_z.dataProvider().addAttributes([QgsField("order", QVariant.Int)])
+                cutted_lines_w_z.updateFields()
+                order_idx = cutted_lines_w_z.fields().indexOf("order")
+                for ftr in cutted_lines_w_z.getFeatures():
+                    ftr_id = ftr.id()
+                    cutted_lines_w_z.changeAttributeValue(ftr_id,order_idx,ftr_id)
+                cutted_lines_w_z.commitChanges()
+
+
+                params2 = { 'INPUT' : input_layer_m, 'OVERLAY' : overlay_layer, 'OUTPUT' : 'memory:LineM'}
+                result2 = processing.run("native:intersection", params2)
+                cutted_lines_w_m = result2['OUTPUT']
+                QgsProject.instance().addMapLayer(cutted_lines_w_m)
+                output_layer_m = cutted_lines_w_m.source()
+                cutted_lines_w_m.startEditing()
+                cutted_lines_w_m.dataProvider().addAttributes([QgsField("order", QVariant.Int)])
+                cutted_lines_w_m.updateFields()
+                order_idy = cutted_lines_w_m.fields().indexOf("order")
+                for ftr in cutted_lines_w_m.getFeatures():
+                    ftr_id = ftr.id()
+                    cutted_lines_w_m.changeAttributeValue(ftr_id,order_idy,ftr_id)
+                cutted_lines_w_m.commitChanges()
+
+                params3 = { 'INPUT' : output_layer_z, 'OUTPUT' : 'memory:PointsZ'}
+                result3 = processing.run("native:extractvertices", params3)
+                points_w_z_values = result3['OUTPUT']
+                QgsProject.instance().addMapLayer(points_w_z_values)
+                output_layer_pz = points_w_z_values.source()
+                points_w_z_values.startEditing()
+                points_w_z_values.deleteAttributes([5,6,7,8])
+                points_w_z_values.commitChanges()
+
+                params4 = { 'INPUT' : output_layer_m, 'OUTPUT' : 'memory:PointsM'}
+                result4 = processing.run("native:extractvertices", params4)
+                points_w_m_values = result4['OUTPUT']
+                QgsProject.instance().addMapLayer(points_w_m_values)
+                output_layer_pm = points_w_m_values.source()
+                points_w_m_values.startEditing()
+                points_w_m_values.deleteAttributes([5,6,7,8])
+                points_w_m_values.commitChanges()
+
+                params5 = {'INPUT' : output_layer_pz, 'COLUMN_PREFIX' : 'derived_z_', 'OUTPUT' : 'memory:DerivedZ'}
+                result5 = processing.run("native:extractzvalues", params5)
+                points_w_derived_z_values = result5['OUTPUT']
+                QgsProject.instance().addMapLayer(points_w_derived_z_values)
+                output_layer_dpz = points_w_derived_z_values.source()
+
+                params6 = {'INPUT' : output_layer_pm, 'COLUMN_PREFIX' : 'derived_m_', 'OUTPUT' : 'memory:DerivedM'}
+                result6 = processing.run("native:extractzvalues", params6)
+                points_w_derived_m_values = result6['OUTPUT']
+                QgsProject.instance().addMapLayer(points_w_derived_m_values)
+                output_layer_dpm = points_w_derived_m_values.source()
+
                 exportedFile.close()
                 
             # Do something useful here - delete the line containing pass and

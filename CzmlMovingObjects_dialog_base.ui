@@ -164,9 +164,9 @@
      <property name="geometry">
       <rect>
        <x>20</x>
-       <y>180</y>
+       <y>170</y>
        <width>751</width>
-       <height>71</height>
+       <height>101</height>
       </rect>
      </property>
      <property name="title">
@@ -267,6 +267,32 @@
        </rect>
       </property>
      </widget>
+     <widget class="QComboBox" name="comboBoxHeightValue">
+      <property name="geometry">
+       <rect>
+        <x>250</x>
+        <y>70</y>
+        <width>121</width>
+        <height>27</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QLabel" name="labelHeightValue">
+      <property name="geometry">
+       <rect>
+        <x>70</x>
+        <y>70</y>
+        <width>161</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Height Value:</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+      </property>
+     </widget>
     </widget>
     <widget class="QGroupBox" name="groupBoxSingleOutput">
      <property name="enabled">
@@ -275,7 +301,7 @@
      <property name="geometry">
       <rect>
        <x>20</x>
-       <y>260</y>
+       <y>310</y>
        <width>751</width>
        <height>51</height>
       </rect>
@@ -317,7 +343,7 @@
      <property name="geometry">
       <rect>
        <x>20</x>
-       <y>320</y>
+       <y>360</y>
        <width>381</width>
        <height>51</height>
       </rect>
@@ -362,7 +388,7 @@
      <property name="geometry">
       <rect>
        <x>410</x>
-       <y>320</y>
+       <y>360</y>
        <width>361</width>
        <height>51</height>
       </rect>
@@ -465,7 +491,7 @@
      <property name="geometry">
       <rect>
        <x>20</x>
-       <y>380</y>
+       <y>410</y>
        <width>751</width>
        <height>51</height>
       </rect>
@@ -554,7 +580,7 @@
      </property>
      <property name="dateTime">
       <datetime>
-       <hour>6</hour>
+       <hour>5</hour>
        <minute>0</minute>
        <second>0</second>
        <year>2020</year>
@@ -596,7 +622,7 @@
      </property>
      <property name="dateTime">
       <datetime>
-       <hour>5</hour>
+       <hour>4</hour>
        <minute>0</minute>
        <second>0</second>
        <year>2020</year>
@@ -625,7 +651,7 @@
      </property>
      <property name="dateTime">
       <datetime>
-       <hour>4</hour>
+       <hour>3</hour>
        <minute>0</minute>
        <second>0</second>
        <year>2020</year>
