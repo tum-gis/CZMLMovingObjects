@@ -23,7 +23,7 @@
     </rect>
    </property>
    <property name="currentIndex">
-    <number>0</number>
+    <number>1</number>
    </property>
    <widget class="QWidget" name="tabLayer">
     <attribute name="title">
@@ -413,57 +413,57 @@
       </property>
       <item>
        <property name="text">
-        <string extracomment="(~40km)">10</string>
+        <string>10</string>
        </property>
       </item>
       <item>
        <property name="text">
-        <string extracomment="(~20km)">11</string>
+        <string>11</string>
        </property>
       </item>
       <item>
        <property name="text">
-        <string>12 (~10km)</string>
+        <string>12</string>
        </property>
       </item>
       <item>
        <property name="text">
-        <string>13 (~5km)</string>
+        <string>13</string>
        </property>
       </item>
       <item>
        <property name="text">
-        <string>14 (~2.5km)</string>
+        <string>14</string>
        </property>
       </item>
       <item>
        <property name="text">
-        <string>15 (~1.2km)</string>
+        <string>15</string>
        </property>
       </item>
       <item>
        <property name="text">
-        <string>16 (~600m)</string>
+        <string>16</string>
        </property>
       </item>
       <item>
        <property name="text">
-        <string>17 (~300m)</string>
+        <string>17</string>
        </property>
       </item>
       <item>
        <property name="text">
-        <string>18 (~150m)</string>
+        <string>18</string>
        </property>
       </item>
       <item>
        <property name="text">
-        <string>19 (~75m)</string>
+        <string>19</string>
        </property>
       </item>
       <item>
        <property name="text">
-        <string extracomment="(~38m)">20</string>
+        <string>20</string>
        </property>
       </item>
      </widget>
@@ -580,7 +580,7 @@
      </property>
      <property name="dateTime">
       <datetime>
-       <hour>5</hour>
+       <hour>3</hour>
        <minute>0</minute>
        <second>0</second>
        <year>2020</year>
@@ -622,7 +622,7 @@
      </property>
      <property name="dateTime">
       <datetime>
-       <hour>4</hour>
+       <hour>2</hour>
        <minute>0</minute>
        <second>0</second>
        <year>2020</year>
@@ -651,7 +651,7 @@
      </property>
      <property name="dateTime">
       <datetime>
-       <hour>3</hour>
+       <hour>1</hour>
        <minute>0</minute>
        <second>0</second>
        <year>2020</year>
@@ -803,14 +803,6 @@
       <string>Clock Step:</string>
      </property>
     </widget>
-   </widget>
-   <widget class="QWidget" name="tabTile">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
-    <attribute name="title">
-     <string>Tiling</string>
-    </attribute>
    </widget>
   </widget>
  </widget>

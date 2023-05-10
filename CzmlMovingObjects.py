@@ -21,16 +21,16 @@
  *                                                                         *
  ***************************************************************************/
 """
-from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication, QVariant
+from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication, QVariant, QDateTime
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction, QFileDialog, QErrorMessage
-from qgis.core import QgsProject, Qgis, QgsCoordinateTransform, QgsCoordinateReferenceSystem, QgsVectorLayerUtils, QgsFeature, QgsGeometry, QgsPoint, QgsTileMatrix, QgsWkbTypes, QgsTileRange, QgsVectorLayer, QgsField, QgsRectangle,  QgsApplication, QgsProcessingFeedback
+from qgis.core import QgsProject, Qgis, QgsCoordinateTransform, QgsCoordinateReferenceSystem, QgsVectorLayerUtils, QgsFeature, QgsGeometry, QgsPoint, QgsTileMatrix, QgsWkbTypes, QgsTileRange, QgsVectorLayer, QgsField, QgsRectangle,  QgsApplication, QgsProcessingFeedback, QgsFeatureRequest, QgsExpression
 
 # Initialize Qt resources from file resources.py
 from .resources import *
 # Import the code for the dialog
 from .CzmlMovingObjects_dialog import CzmlMovingObjectsDialog
-import os.path
+import os
 
 # Added
 from qgis.utils import *
@@ -80,8 +80,8 @@ class CzmlMovingObjects:
             1:"Single CZML File"
             ,2:"Separate CZML files for every moving object"
             ,3:"CZML files within XYZ Tiles"
-            ,4:"CZML files in Time Slices (T Tiles)"
-            ,5:"CZML Files within XYZ Tiles in Time Slices (XYZ+T)"
+            #,4:"CZML files in Time Slices (T Tiles)"
+            #,5:"CZML Files within XYZ Tiles in Time Slices (XYZ+T)"
             }
 
         # Check if plugin was started the first time in current QGIS session
@@ -310,16 +310,15 @@ class CzmlMovingObjects:
             self.dlg.groupBoxGeneralSettings.setEnabled(1)
             self.dlg.groupBoxFolderOutput.setEnabled(1)
             self.dlg.groupBoxZLevel.setEnabled(1)
-            
+            self.dlg.groupBoxGroupBy.setEnabled(1)
             # Disable
-            self.dlg.groupBoxGroupBy.setDisabled(1)
             self.dlg.groupBoxSingleOutput.setDisabled(1)
             
 
-        elif self.dlg.comboBoxSelectScenario.currentIndex()==4:
-            print('Singular CZML Files in Time Slices --> option selected.')
-        elif self.dlg.comboBoxSelectScenario.currentIndex()==5:
-            print('Separate CZML Files within XYZ Tiles in Time Slices --> option selected.')
+        #elif self.dlg.comboBoxSelectScenario.currentIndex()==4:
+        #    print('Singular CZML Files in Time Slices --> option selected.')
+        #elif self.dlg.comboBoxSelectScenario.currentIndex()==5:
+        #    print('Separate CZML Files within XYZ Tiles in Time Slices --> option selected.')
         else:
             print('Oh no!')
 
@@ -454,13 +453,14 @@ class CzmlMovingObjects:
                     point = feature.geometry().asPoint()
                     secondz = feature[secondsAttribute]
                     cartesianPoint = (transform2Cartesian.transform(point.x(), point.y(), 0))
-                    positions.append(round(secondz,3))
-                    positions.append(round(cartesianPoint[0],2))
-                    positions.append(round(cartesianPoint[1],2))
+                    positions.append(round(secondz,1))
+                    positions.append(round(cartesianPoint[0],3))
+                    positions.append(round(cartesianPoint[1],3))
                     positions.append(round(cartesianPoint[2],2))
                 vehicleEpoch = next(selectedLayer.getFeatures())[epochAttribute]
+                self.whoAreYou(vehicleEpoch)
                 vehicleEpoch = timeZone.localize(vehicleEpoch.toPyDateTime()).isoformat()
-                #self.whoAreYou(vehicleEpoch)
+                
                 vehiclePosition = Vehicle.Position(positions, vehicleEpoch)
                 if self.dlg.comboBoxShowAs.currentText() == 'Point':
                     vehiclePoint = Vehicle.Point()
@@ -472,28 +472,33 @@ class CzmlMovingObjects:
                 #print(vehicleData.getVehicleDict())
                 featureLines = ',\n' + json.dumps( vehicleData.getVehicleDict(), indent=4 )
                 wholeDocument = beginningLines + featureLines +'\n]\n'
-                print(wholeDocument)
+                #print(wholeDocument)
                 exportedFile.write(wholeDocument)
                 exportedFile.close()
             elif self.dlg.comboBoxSelectScenario.currentIndex()==2 and groupByAttribute != 'Not Selected':
                 list_of_values = QgsVectorLayerUtils.getValues(selectedLayer, groupByAttribute)[0]
                 list_of_values = list(set(list_of_values))
                 for vehicle in list_of_values:
-                    quotedVehicle = parse.quote_plus(vehicle)
+                    quotedVehicle = parse.quote_plus(str(vehicle))
                     fileURL=fanoutFolder+os.path.sep+fanoutPrefix+quotedVehicle+'.czml'
                     exportedFile = open(fileURL, mode='w', encoding='utf-8')
-                    idn = 'Vehicle'+vehicle
+                    idn = 'Vehicle'+str(vehicle)
                     positions = []
                     transform2Cartesian = pyproj.Transformer.from_crs("EPSG:4326", "EPSG:4978", always_xy = True)
-                    for feature in selectedLayer.getFeatures():
+                    filter_expression = "{} = '{}'".format(groupByAttribute, vehicle)
+                    #print(filter_expression)
+                    filtered_layer = selectedLayer.getFeatures(QgsFeatureRequest().setFilterExpression(filter_expression))
+                    
+                    for feature in filtered_layer:
                         point = feature.geometry().asPoint()
                         secondz = feature[secondsAttribute]
+                        vehicleEpoch = feature[epochAttribute]
                         cartesianPoint = (transform2Cartesian.transform(point.x(), point.y(), 0))
-                        positions.append(round(secondz,3))
-                        positions.append(cartesianPoint[0])
-                        positions.append(cartesianPoint[1])
-                        positions.append(cartesianPoint[2])
-                    vehicleEpoch = next(selectedLayer.getFeatures())[epochAttribute]
+                        positions.append(round(secondz,1))
+                        positions.append(round(cartesianPoint[0],3))
+                        positions.append(round(cartesianPoint[1],3))
+                        positions.append(round(cartesianPoint[2],2))
+                    #vehicleEpoch = next(filtered_layer)[epochAttribute]
                     vehicleEpoch = timeZone.localize(vehicleEpoch.toPyDateTime()).isoformat()
                     vehiclePosition = Vehicle.Position(positions, vehicleEpoch)
                     if self.dlg.comboBoxShowAs.currentText() == 'Point':
@@ -505,19 +510,19 @@ class CzmlMovingObjects:
                     vehicleData = Vehicle(idn, vehiclePosition, vehiclePoint)
                     featureLines = ',\n' + json.dumps( vehicleData.getVehicleDict(), indent=4 )
                     wholeDocument = beginningLines + featureLines +'\n]\n'
-                    print(wholeDocument)
+                    #print(wholeDocument)
                     exportedFile.write(wholeDocument)
                     exportedFile.close()
-            elif self.dlg.comboBoxSelectScenario.currentIndex()==3:
+            elif self.dlg.comboBoxSelectScenario.currentIndex()==3 and groupByAttribute != 'Not Selected':
                 
-                fileURL=fanoutFolder+os.path.sep+'test_xyz'+'.czml'
-                exportedFile = open(fileURL, mode='w', encoding='utf-8')
-                idn = 'Vehicle'
+                #fileURL=fanoutFolder+os.path.sep+'test_xyz'+'.czml'
+                #exportedFile = open(fileURL, mode='w', encoding='utf-8')
+                
                 selectedZoomLevel = self.dlg.comboBoxSelectZLevel.currentText()
                 
                 #transform2Cartesian = pyproj.Transformer.from_crs("EPSG:4326", "EPSG:4978", always_xy = True)
-                pointsArrayZ = []
-                pointsArrayM = []
+                
+                
                 wktTypeOfLayer = ''
 
                 # Add temporary tiles layer into canvas
@@ -532,22 +537,32 @@ class CzmlMovingObjects:
                 editMyLinesZ = myLinesZ.dataProvider()
                 QgsProject.instance().addMapLayer(myLinesZ)
                 
-                # Convert points into linestringZ
-                for feature in selectedLayer.getFeatures():
-                    pointWkt = feature.geometry().asWkt()
-                    pointInstance = QgsPoint()
-                    pointInstance.fromWkt(pointWkt)
-                    wktTypeOfLayer = pointInstance.wktTypeStr()
-                    pointsArrayZ.append(pointInstance)
-                
-                # Set LineZ from points array and calculate BBOX
-                movingObjectAsLine = QgsFeature()
-                movingObjectAsLine.setGeometry(QgsGeometry.fromPolyline(pointsArrayZ))
-                movingObjectBB = movingObjectAsLine.geometry().boundingBox()
-
-                # Add lineZ into layer
-                movingObjectAsLine.setAttributes(["lineZ"])
-                editMyLinesZ.addFeatures( [ movingObjectAsLine ] )
+                list_of_values2 = QgsVectorLayerUtils.getValues(selectedLayer, groupByAttribute)[0]
+                list_of_values2 = list(set(list_of_values2))
+                #print(list_of_values2)
+                i=0
+                for vehicle in list_of_values2:
+                    idn = 'Vehicle' + str(vehicle)
+                    pointsArrayZ = []
+                    filter_expression = "{} = '{}'".format(groupByAttribute, vehicle)
+                    #print(filter_expression)
+                    filtered_layer = selectedLayer.getFeatures(QgsFeatureRequest().setFilterExpression(filter_expression))
+                    # Convert points into linestringZ
+                    for feature in filtered_layer:
+                        pointWkt = feature.geometry().asWkt()
+                        pointInstance = QgsPoint()
+                        pointInstance.fromWkt(pointWkt)
+                        wktTypeOfLayer = pointInstance.wktTypeStr()
+                        pointsArrayZ.append(pointInstance)
+                    # Set LineZ from points array and calculate BBOX
+                    movingObjectAsLine = QgsFeature()
+                    movingObjectAsLine.setGeometry(QgsGeometry.fromPolyline(pointsArrayZ))
+                    #movingObjectBB = movingObjectAsLine.geometry().boundingBox()
+                    # Add lineZ into layer
+                    feature_name = 'LineZ'+str(i)
+                    movingObjectAsLine.setAttributes([feature_name])
+                    editMyLinesZ.addFeatures( [ movingObjectAsLine ] )
+                    i+=1
 
                 # Add temporary linesM layer into canvas
                 myUriLinesM = "linestring?crs=epsg:4326&field=name:string"
@@ -555,30 +570,40 @@ class CzmlMovingObjects:
                 editMyLinesM = myLinesM.dataProvider()
                 QgsProject.instance().addMapLayer(myLinesM)
 
-                # Convert points into linestringM
-                for feature in selectedLayer.getFeatures():
-                    pointWkt = feature.geometry().asWkt()
-                    pointInstance = QgsPoint()
-                    pointInstance.fromWkt(pointWkt)
-                    secondz = feature[secondsAttribute]
-                    pointInstance.setZ(secondz)
-                    print(pointInstance, secondz)
-                    pointsArrayM.append(pointInstance)
-
-                # Set LineM from points array and calculate BBOX
-                movingObjectAsLineM = QgsFeature()
-                movingObjectAsLineM.setGeometry(QgsGeometry.fromPolyline(pointsArrayM))
-
-                # Add lineZ into layer
-                movingObjectAsLineM.setAttributes(["lineM"])
-                editMyLinesM.addFeatures( [ movingObjectAsLineM ] )
-                
+                j=0
+                for vehicle in list_of_values2:
+                    idn = 'Vehicle' + str(vehicle)
+                    pointsArrayM = []
+                    filter_expression = "{} = '{}'".format(groupByAttribute, vehicle)
+                    #print(filter_expression)
+                    filtered_layer = selectedLayer.getFeatures(QgsFeatureRequest().setFilterExpression(filter_expression))
+                    # Convert points into linestringM
+                    for feature in filtered_layer:
+                        pointWkt = feature.geometry().asWkt()
+                        pointInstance = QgsPoint()
+                        pointInstance.fromWkt(pointWkt)
+                        secondz = feature[secondsAttribute]
+                        pointInstance.setZ(secondz)
+                        #print(pointInstance, secondz)
+                        pointsArrayM.append(pointInstance)
+                    # Set LineM from points array and calculate BBOX
+                    movingObjectAsLineM = QgsFeature()
+                    movingObjectAsLineM.setGeometry(QgsGeometry.fromPolyline(pointsArrayM))
+                    # Add lineZ into layer
+                    feature_name = 'LineM'+str(i)
+                    movingObjectAsLineM.setAttributes([feature_name])
+                    editMyLinesM.addFeatures( [ movingObjectAsLineM ] )
+                    j+=1
+                #Calculate BBOX
+                myLinesZ.commitChanges()
+                #print(myLinesZ.extent())
+                bbox_of_layer = myLinesZ.extent()
                 #tileMinimum is equal to Top-Left Tile (cause tiling starts from top left)
                 #tileMaximum is equal to Right-Bottom Tile
-                tileMinimum = self.deg2num(movingObjectBB.yMaximum(), movingObjectBB.xMinimum(), int(selectedZoomLevel))
-                tileMaximum = self.deg2num(movingObjectBB.yMinimum(), movingObjectBB.xMaximum(), int(selectedZoomLevel))
+                tileMinimum = self.deg2num(bbox_of_layer.yMaximum(), bbox_of_layer.xMinimum(), int(selectedZoomLevel))
+                tileMaximum = self.deg2num(bbox_of_layer.yMinimum(), bbox_of_layer.xMaximum(), int(selectedZoomLevel))
                 #print(tileMinimum, tileMaximum, wktTypeOfLayer)
-                
+                print("xmin: {}, xmax: {}, ymin: {}, ymax {}".format(bbox_of_layer.xMinimum(), bbox_of_layer.xMaximum(), bbox_of_layer.yMinimum(), bbox_of_layer.yMaximum()) )
                 columnNumber = (tileMaximum[0] - tileMinimum[0]) + 1
                 rowNumber = (tileMaximum[1] - tileMinimum[1]) + 1
                 #print(columnNumber, rowNumber)
@@ -594,15 +619,15 @@ class CzmlMovingObjects:
                         j +=1
                     i += 1
 
-                input_layer_z = myLinesZ.source()
-                input_layer_m = myLinesM.source()
-                overlay_layer = myTiles.source()
+                #input_layer_z = myLinesZ.source()
+                #input_layer_m = myLinesM.source()
+                #overlay_layer = myTiles.source()
                 
-                params1 = { 'INPUT' : input_layer_z, 'OVERLAY' : overlay_layer, 'OUTPUT' : 'memory:LineZ'}
+                params1 = { 'INPUT' : myLinesZ, 'OVERLAY' : myTiles, 'OUTPUT' : 'memory:LineZ'}
                 result1 = processing.run("native:intersection", params1)
                 cutted_lines_w_z = result1['OUTPUT']
-                QgsProject.instance().addMapLayer(cutted_lines_w_z)
-                output_layer_z = cutted_lines_w_z.source()
+                #QgsProject.instance().addMapLayer(cutted_lines_w_z)
+                #output_layer_z = cutted_lines_w_z.source()
                 cutted_lines_w_z.startEditing()
                 cutted_lines_w_z.dataProvider().addAttributes([QgsField("order", QVariant.Int)])
                 cutted_lines_w_z.updateFields()
@@ -613,11 +638,11 @@ class CzmlMovingObjects:
                 cutted_lines_w_z.commitChanges()
 
 
-                params2 = { 'INPUT' : input_layer_m, 'OVERLAY' : overlay_layer, 'OUTPUT' : 'memory:LineM'}
+                params2 = { 'INPUT' : myLinesM, 'OVERLAY' : myTiles, 'OUTPUT' : 'memory:LineM'}
                 result2 = processing.run("native:intersection", params2)
                 cutted_lines_w_m = result2['OUTPUT']
-                QgsProject.instance().addMapLayer(cutted_lines_w_m)
-                output_layer_m = cutted_lines_w_m.source()
+                #QgsProject.instance().addMapLayer(cutted_lines_w_m)
+                #output_layer_m = cutted_lines_w_m.source()
                 cutted_lines_w_m.startEditing()
                 cutted_lines_w_m.dataProvider().addAttributes([QgsField("order", QVariant.Int)])
                 cutted_lines_w_m.updateFields()
@@ -627,38 +652,159 @@ class CzmlMovingObjects:
                     cutted_lines_w_m.changeAttributeValue(ftr_id,order_idy,ftr_id)
                 cutted_lines_w_m.commitChanges()
 
-                params3 = { 'INPUT' : output_layer_z, 'OUTPUT' : 'memory:PointsZ'}
+                params3 = { 'INPUT' : cutted_lines_w_z, 'OUTPUT' : 'memory:PointsZ'}
                 result3 = processing.run("native:extractvertices", params3)
                 points_w_z_values = result3['OUTPUT']
-                QgsProject.instance().addMapLayer(points_w_z_values)
-                output_layer_pz = points_w_z_values.source()
+                #QgsProject.instance().addMapLayer(points_w_z_values)
+                #output_layer_pz = points_w_z_values.source()
                 points_w_z_values.startEditing()
-                points_w_z_values.deleteAttributes([5,6,7,8])
+                # Take the id numbers of automatically added columns and remove them by using their field id numbers
+                vertex_part_idx = points_w_z_values.fields().indexOf("vertex_part")
+                vertex_part_index_idx = points_w_z_values.fields().indexOf("vertex_part_index")
+                distance_idx = points_w_z_values.fields().indexOf("distance")
+                angle_idx = points_w_z_values.fields().indexOf("angle")
+                points_w_z_values.deleteAttributes([vertex_part_idx, vertex_part_index_idx, distance_idx, angle_idx])
                 points_w_z_values.commitChanges()
 
-                params4 = { 'INPUT' : output_layer_m, 'OUTPUT' : 'memory:PointsM'}
+                params4 = { 'INPUT' : cutted_lines_w_m, 'OUTPUT' : 'memory:PointsM'}
                 result4 = processing.run("native:extractvertices", params4)
                 points_w_m_values = result4['OUTPUT']
-                QgsProject.instance().addMapLayer(points_w_m_values)
-                output_layer_pm = points_w_m_values.source()
+                #QgsProject.instance().addMapLayer(points_w_m_values)
+                #output_layer_pm = points_w_m_values.source()
                 points_w_m_values.startEditing()
-                points_w_m_values.deleteAttributes([5,6,7,8])
+                # Take the id numbers of automatically added columns and remove them by using their field id numbers
+                vertex_part_idx = points_w_m_values.fields().indexOf("vertex_part")
+                vertex_part_index_idx = points_w_m_values.fields().indexOf("vertex_part_index")
+                distance_idx = points_w_m_values.fields().indexOf("distance")
+                angle_idx = points_w_m_values.fields().indexOf("angle")
+                points_w_m_values.deleteAttributes([vertex_part_idx, vertex_part_index_idx, distance_idx, angle_idx])
                 points_w_m_values.commitChanges()
 
-                params5 = {'INPUT' : output_layer_pz, 'COLUMN_PREFIX' : 'derived_z_', 'OUTPUT' : 'memory:DerivedZ'}
+                params5 = {'INPUT' : points_w_z_values, 'COLUMN_PREFIX' : 'derived_z_', 'OUTPUT' : 'memory:DerivedZ'}
                 result5 = processing.run("native:extractzvalues", params5)
                 points_w_derived_z_values = result5['OUTPUT']
-                QgsProject.instance().addMapLayer(points_w_derived_z_values)
-                output_layer_dpz = points_w_derived_z_values.source()
+                #QgsProject.instance().addMapLayer(points_w_derived_z_values)
+                #output_layer_dpz = points_w_derived_z_values.source()
+                points_w_derived_z_values.startEditing()
+                points_w_derived_z_values.dataProvider().addAttributes([QgsField("join_constraint", QVariant.String)])
+                points_w_derived_z_values.updateFields()
+                join_constraint_idx = points_w_derived_z_values.fields().indexOf("join_constraint")
+                for ftr in points_w_derived_z_values.getFeatures():
+                    cnstrnt = "{}-{}-{}-{}-{}".format(ftr["column_x"], ftr["column_y"], ftr["zoom_level"], ftr["order"], ftr["vertex_index"])
+                    #print(cnstrnt)
+                    points_w_derived_z_values.changeAttributeValue(ftr.id(),join_constraint_idx,cnstrnt)
+                points_w_derived_z_values.commitChanges()
 
-                params6 = {'INPUT' : output_layer_pm, 'COLUMN_PREFIX' : 'derived_m_', 'OUTPUT' : 'memory:DerivedM'}
+                params6 = {'INPUT' : points_w_m_values, 'COLUMN_PREFIX' : 'derived_m_', 'OUTPUT' : 'memory:DerivedM'}
                 result6 = processing.run("native:extractzvalues", params6)
                 points_w_derived_m_values = result6['OUTPUT']
-                QgsProject.instance().addMapLayer(points_w_derived_m_values)
-                output_layer_dpm = points_w_derived_m_values.source()
+                #QgsProject.instance().addMapLayer(points_w_derived_m_values)
+                #output_layer_dpm = points_w_derived_m_values.source()
+                points_w_derived_m_values.startEditing()
+                points_w_derived_m_values.dataProvider().addAttributes([QgsField("join_constraint", QVariant.String)])
+                points_w_derived_m_values.updateFields()
+                join_constraint_idx2 = points_w_derived_m_values.fields().indexOf("join_constraint")
+                for ftr in points_w_derived_m_values.getFeatures():
+                    cnstrnt = "{}-{}-{}-{}-{}".format(ftr["column_x"], ftr["column_y"], ftr["zoom_level"], ftr["order"], ftr["vertex_index"])
+                    #print(cnstrnt)
+                    points_w_derived_m_values.changeAttributeValue(ftr.id(),join_constraint_idx,cnstrnt)
+                points_w_derived_m_values.commitChanges()
 
-                exportedFile.close()
+                jn = 'join_constraint'
+                flds = ['derived_m_first']
+                params7 = {'INPUT': points_w_derived_z_values, 'FIELD': jn, 'INPUT_2': points_w_derived_m_values, 'FIELD_2': jn, 'FIELDS_TO_COPY': flds, 'METHOD': 1, 'DISCARD_NONMATCHING': False, 'PREFIX':'', 'OUTPUT': 'memory:CombinedZM'}
+                result7 = processing.run("native:joinattributestable", params7)
+                layer_combinedZM = result7['OUTPUT']
+                QgsProject.instance().addMapLayer(layer_combinedZM)
                 
+                #Start to deploy files
+                
+                for i in range(columnNumber):
+                    path1 = fanoutFolder+os.path.sep+str(i)
+                    if not os.path.exists(path1):
+                        os.mkdir(path1)
+                    for j in range(rowNumber):
+                        #print(i,j,columnNumber,rowNumber)
+                        path2 = path1+os.path.sep+str(j)
+                        if not os.path.exists(path2):
+                            os.mkdir(path2)
+                        fileURL=path2+os.path.sep+'tile.czml'
+                        exportedFile = open(fileURL, mode='w', encoding='utf-8')
+                        transform2Cartesian = pyproj.Transformer.from_crs("EPSG:4326", "EPSG:4978", always_xy = True)
+
+                        filter_expression = "column_x = {} AND column_y = {}".format(tileMinimum[0]+i, tileMinimum[1]+j)
+                        filtered_layer = layer_combinedZM.getFeatures(QgsFeatureRequest().setFilterExpression(filter_expression))
+                        
+                        
+                        feature_names_in_tile = set(())
+                        for f in filtered_layer:
+                            feature_names_in_tile.add(f["name"])
+                        #print(i, j, feature_names_in_tile)
+                        featureLines = ''
+                        for veh in feature_names_in_tile:
+                            idn2 = 'Vehicle_'+veh
+                            positions = []
+                            filter_expression2 = "column_x = {} AND column_y = {} AND name = '{}'".format(tileMinimum[0]+i, tileMinimum[1]+j,veh)
+                            filtered_layer2 = layer_combinedZM.getFeatures(QgsFeatureRequest().setFilterExpression(filter_expression2))
+                            #print(i,j,filter_expression2,veh)
+                            
+                            for ftr in filtered_layer2:
+                                #print(ftr.attributes())
+                                point = ftr.geometry().asPoint()
+                                secondz = ftr['derived_m_first']
+                                cartesianPoint = (transform2Cartesian.transform(point.x(), point.y(), 3))
+                                positions.append(round(secondz,1))
+                                positions.append(round(cartesianPoint[0],3))
+                                positions.append(round(cartesianPoint[1],3))
+                                positions.append(round(cartesianPoint[2],2))
+                            vehicleEpoch = next(selectedLayer.getFeatures())[epochAttribute]
+                            vehicleEpoch2 = timeZone.localize(vehicleEpoch.toPyDateTime()).isoformat()
+                            vehiclePosition = Vehicle.Position(positions, vehicleEpoch2)
+                            if self.dlg.comboBoxShowAs.currentText() == 'Point':
+                                vehiclePoint = Vehicle.Point()
+                            else: 
+                                #Change here and add other options later
+                                print('Since there is no other available option yet, please get by with point object!')
+                                vehiclePoint = Vehicle.Point()
+                            vehicleData = Vehicle(idn2, vehiclePosition, vehiclePoint)
+                            featureLines = featureLines + ',\n' + json.dumps( vehicleData.getVehicleDict(), indent=4 )
+                            #print(featureLines)
+                        wholeDocument = beginningLines + featureLines +'\n]\n'
+                        exportedFile.write(wholeDocument)
+                        exportedFile.close()
+                        j+=1
+                        
+                        #print(wholeDocument)
+                        '''
+                        for veh in list_of_values3:
+                            idn = 'Vehicle'+veh
+                            positions = []
+                            for ftr in filtered_layer:
+                                point = ftr.geometry().asPoint()
+                                secondz = ftr['derived_m_first']
+                                cartesianPoint = (transform2Cartesian.transform(point.x(), point.y(), 0))
+                                positions.append(round(secondz,3))
+                                positions.append(cartesianPoint[0])
+                                positions.append(cartesianPoint[1])
+                                positions.append(cartesianPoint[2])
+                            vehicleEpoch = next(selectedLayer.getFeatures())[epochAttribute]
+                            vehicleEpoch2 = timeZone.localize(vehicleEpoch.toPyDateTime()).isoformat()
+                            vehiclePosition = Vehicle.Position(positions, vehicleEpoch2)
+                            if self.dlg.comboBoxShowAs.currentText() == 'Point':
+                                vehiclePoint = Vehicle.Point()
+                            else: 
+                                #Change here and add other options later
+                                print('Since there is no other available option yet, please get by with point object!')
+                                vehiclePoint = Vehicle.Point()
+                            vehicleData = Vehicle(idn, vehiclePosition, vehiclePoint)
+                            featureLines = ',\n' + json.dumps( vehicleData.getVehicleDict(), indent=4 )
+                        featureLines += featureLines
+                        wholeDocument = beginningLines + featureLines +'\n]\n'
+                        #print(wholeDocument)
+                        exportedFile.write(wholeDocument)
+                        '''
+                    i+=1
+                        
             # Do something useful here - delete the line containing pass and
             # substitute with your code.
             pass
