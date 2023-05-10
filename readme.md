@@ -5,6 +5,7 @@ CZMLMovingObjects plugin is a tool to create CZML files for moving objects in QG
 Moving objects could be any object that is represented in a GIS data layer as points and shares some keys to recognize objects (For Exp. vehicle_id).
 
 ![A sample image shows the cars in an intersection](intersection.gif)
+A sample image shows the cars in an intersection
 
 ## How to install? 
 
